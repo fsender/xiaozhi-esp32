@@ -7,7 +7,13 @@ cmake_minimum_required(VERSION 3.16)
 set(PROJECT_VER "1.5.8")
 
 # Add this line to disable the specific warning
-add_compile_options(-Wno-missing-field-initializers)
+set(compile_options ${compile_options} 
+  "-Wno-error=format" 
+  "-Wno-error=maybe-uninitialized"
+  "-Wno-missing-field-initializers"
+  "-Wno-error=stringop-overflow"
+  "-DPSRAM_SIZE_KB=8192"
+)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(xiaozhi)
