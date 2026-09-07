@@ -1,0 +1,161 @@
+
+I (16378) AudioService: Resampling audio from 16000 to 24000
+W (19468) Gesture: >>> SWIPE VERTICAL -> shake1 -> listen -> listening
+W (19468) GifDisplay: WakeWithTrigger('swipe_vertical') -> shake1.gif
+W (19478) GifDisplay: Enqueued 3 steps, priority=HIGH, gif_busy_=true
+W (19478) GifDisplay: Queue next: shake1.gif (once)
+W (19528) GifDisplay: >>> PLAYING: shake1.gif (once, 280x280)
+I (19528) StateMachine: State: idle -> connecting
+W (19568) GifDisplay: SetEmotion('neutral') state: listening -> idle, gif: listen_start.gif, busy=1
+W (19568) GifDisplay: gif_busy_, will apply when chain finishes
+I (19568) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (19578) wifi:W (19578) Gesture: >>> TAP -> tap.gif -> listen_start -> listening
+Set ps type: 0, coexist: 0
+W (19588) GifDisplay: WakeWithTrigger('tap') -> tap.gif
+
+W (19598) GifDisplay: Enqueued 3 steps, priority=HIGH, gif_busy_=true
+W (19598) GifDisplay: Queue next: tap.gif (once)
+W (19658) GifDisplay: >>> PLAYING: tap.gif (once, 280x280)
+I (19668) MQTT: Session ID: f5f8629a
+I (19668) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (19668) wifi:Set ps type: 0, coexist: 0
+
+I (19668) StateMachine: State: connecting -> listening
+W (19718) GifDisplay: SetEmotion('neutral') state: listening -> listening, gif: listening.gif, busy=1
+W (19718) GifDisplay: gif_busy_, will apply when chain finishes
+I (19718) MQTT: Closing audio channel, send_goodbye: 1
+I (19728) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (19728) wifi:Set ps type: 2, coexist: 0
+
+I (19808) StateMachine: State: listening -> idle
+W (19808) GifDisplay: SetEmotion('neutral') state: listening -> idle, gif: idle.gif, busy=1
+W (19808) GifDisplay: gif_busy_, will apply when chain finishes
+I (20808) MQTT: Received goodbye message, session_id: f5f8629a
+I (20808) MQTT: Closing audio channel, send_goodbye: 0
+I (20808) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (20808) wifi:Set ps type: 2, coexist: 0
+
+W (22498) GifDisplay: Queue next: listen_start.gif (once)
+W (22558) GifDisplay: >>> PLAYING: listen_start.gif (once, 280x280)
+W (24768) GifDisplay: Queue next: listening.gif (loop)
+W (24768) GifDisplay: Final loop step, gif_busy_=false
+W (24818) GifDisplay: >>> PLAYING: listening.gif (loop, 280x280)
+W (26378) Gesture: >>> SWIPE HORIZONTAL -> shake2 -> listen -> listening
+W (26378) GifDisplay: WakeWithTrigger('swipe_horizontal') -> shake2.gif
+W (26398) GifDisplay: Enqueued 3 steps, priority=HIGH, gif_busy_=true
+W (26398) GifDisplay: Queue next: shake2.gif (once)
+W (26438) GifDisplay: >>> PLAYING: shake2.gif (once, 280x280)
+I (26438) StateMachine: State: idle -> connecting
+W (26478) GifDisplay: SetEmotion('neutral') state: listening -> idle, gif: listen_start.gif, busy=1
+W (26478) GifDisplay: gif_busy_, will apply when chain finishes
+I (26478) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (26488) wifi:Set ps type: 0, coexist: 0
+W (26488) Gesture: >>> TAP -> tap.gif -> listen_start -> listening
+
+W (26498) GifDisplay: WakeWithTrigger('tap') -> tap.gif
+W (26508) GifDisplay: Enqueued 3 steps, priority=HIGH, gif_busy_=true
+W (26508) GifDisplay: Queue next: tap.gif (once)
+W (26558) GifDisplay: >>> PLAYING: tap.gif (once, 280x280)
+I (26588) MQTT: Session ID: 23429d17
+I (26588) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (26588) wifi:Set ps type: 0, coexist: 0
+
+I (26588) StateMachine: State: connecting -> listening
+W (26618) GifDisplay: SetEmotion('neutral') state: listening -> listening, gif: listening.gif, busy=1
+W (26618) GifDisplay: gif_busy_, will apply when chain finishes
+I (26638) MQTT: Closing audio channel, send_goodbye: 1
+I (26638) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (26638) wifi:Set ps type: 2, coexist: 0
+
+I (26708) StateMachine: State: listening -> idle
+W (26708) GifDisplay: SetEmotion('neutral') state: listening -> idle, gif: idle.gif, busy=1
+W (26708) GifDisplay: gif_busy_, will apply when chain finishes
+I (26728) MQTT: Received goodbye message, session_id: 23429d17
+I (26728) MQTT: Closing audio channel, send_goodbye: 0
+I (26728) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (26738) wifi:Set ps type: 2, coexist: 0
+
+W (29378) GifDisplay: Queue next: listen_start.gif (once)
+W (29428) GifDisplay: >>> PLAYING: listen_start.gif (once, 280x280)
+W (31578) GifDisplay: Queue next: listening.gif (loop)
+W (31578) GifDisplay: Final loop step, gif_busy_=false
+W (31628) GifDisplay: >>> PLAYING: listening.gif (loop, 280x280)
+I (35758) SystemInfo: free sram: 122091 minimal sram: 85911
+W (39718) Gesture: >>> SWIPE HORIZONTAL -> shake2 -> listen -> listening
+W (39718) GifDisplay: WakeWithTrigger('swipe_horizontal') -> shake2.gif
+W (39728) GifDisplay: Enqueued 3 steps, priority=HIGH, gif_busy_=true
+W (39728) GifDisplay: Queue next: shake2.gif (once)
+W (39768) GifDisplay: >>> PLAYING: shake2.gif (once, 280x280)
+I (39768) StateMachine: State: idle -> connecting
+W (39818) GifDisplay: SetEmotion('neutral') state: listening -> idle, gif: listen_start.gif, busy=1
+W (39818) GifDisplay: gif_busy_, will apply when chain finishes
+I (39818) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (39828) wifi:Set ps type: 0, coexist: 0
+
+W (39858) Gesture: >>> TAP -> tap.gif -> listen_start -> listening
+W (39858) GifDisplay: WakeWithTrigger('tap') -> tap.gif
+W (39868) GifDisplay: Enqueued 3 steps, priority=HIGH, gif_busy_=true
+W (39868) GifDisplay: Queue next: tap.gif (once)
+I (39898) MQTT: Session ID: 5581156f
+I (39908) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (39908) wifi:Set ps type: 0, coexist: 0
+
+I (39908) StateMachine: State: connecting -> listening
+W (39918) GifDisplay: >>> PLAYING: tap.gif (once, 280x280)
+W (39968) GifDisplay: SetEmotion('neutral') state: listening -> listening, gif: listening.gif, busy=1
+W (39968) GifDisplay: gif_busy_, will apply when chain finishes
+I (39978) MQTT: Closing audio channel, send_goodbye: 1
+I (39978) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (39978) wifi:Set ps type: 2, coexist: 0
+
+I (39978) StateMachine: State: listening -> idle
+W (39988) GifDisplay: SetEmotion('neutral') state: listening -> idle, gif: idle.gif, busy=1
+W (39998) GifDisplay: gif_busy_, will apply when chain finishes
+I (41078) MQTT: Received goodbye message, session_id: 5581156f
+I (41078) MQTT: Closing audio channel, send_goodbye: 0
+I (41078) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (41088) wifi:Set ps type: 2, coexist: 0
+
+W (42728) GifDisplay: Queue next: listen_start.gif (once)
+W (42778) GifDisplay: >>> PLAYING: listen_start.gif (once, 280x280)
+W (44418) Gesture: >>> SWIPE VERTICAL -> shake1 -> listen -> listening
+W (44418) GifDisplay: WakeWithTrigger('swipe_vertical') -> shake1.gif
+W (44428) GifDisplay: Enqueued 3 steps, priority=HIGH, gif_busy_=true
+W (44428) GifDisplay: Queue next: shake1.gif (once)
+W (44468) GifDisplay: >>> PLAYING: shake1.gif (once, 280x280)
+I (44468) StateMachine: State: idle -> connecting
+W (44508) GifDisplay: SetEmotion('neutral') state: listening -> idle, gif: listen_start.gif, busy=1
+W (44508) GifDisplay: gif_busy_, will apply when chain finishes
+I (44518) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+W (44518) Gesture: >>> TAP -> tap.gif -> listen_start -> listening
+I (44518) wifi:W (44528) GifDisplay: WakeWithTrigger('tap') -> tap.gif
+Set ps type: 0, coexist: 0
+
+W (44538) GifDisplay: Enqueued 3 steps, priority=HIGH, gif_busy_=true
+W (44538) GifDisplay: Queue next: tap.gif (once)
+W (44598) GifDisplay: >>> PLAYING: tap.gif (once, 280x280)
+I (44608) MQTT: Session ID: 706c7615
+I (44608) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (44608) wifi:Set ps type: 0, coexist: 0
+
+I (44608) StateMachine: State: connecting -> listening
+W (44668) GifDisplay: SetEmotion('neutral') state: listening -> listening, gif: listening.gif, busy=1
+W (44668) GifDisplay: gif_busy_, will apply when chain finishes
+I (44678) MQTT: Closing audio channel, send_goodbye: 1
+I (44688) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (44688) wifi:Set ps type: 2, coexist: 0
+
+I (44758) StateMachine: State: listening -> idle
+W (44758) GifDisplay: SetEmotion('neutral') state: listening -> idle, gif: idle.gif, busy=1
+W (44758) GifDisplay: gif_busy_, will apply when chain finishes
+I (45758) MQTT: Received goodbye message, session_id: 706c7615
+I (45758) MQTT: Closing audio channel, send_goodbye: 0
+I (45758) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (45768) wifi:Set ps type: 2, coexist: 0
+
+W (47418) GifDisplay: Queue next: listen_start.gif (once)
+W (47468) GifDisplay: >>> PLAYING: listen_start.gif (once, 280x280)
+W (49588) GifDisplay: Queue next: listening.gif (loop)
+W (49588) GifDisplay: Final loop step, gif_busy_=false
+W (49638) GifDisplay: >>> PLAYING: listening.gif (loop, 280x280)
+I (53718) SystemInfo: free sram: 122119 minimal sram: 85911

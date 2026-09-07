@@ -158,6 +158,7 @@ public:
     bool gif_busy_ = false;
     lv_timer_t* gif_watchdog_timer_ = nullptr;
     std::string current_state_ = "idle";
+    bool gesture_active_ = false;  // Prevent tap during gesture
 
     virtual void SetupUI() override {
         SpiLcdDisplay::SetupUI();
@@ -249,7 +250,7 @@ public:
     static void OnGesture(lv_event_t* e) {
         static uint32_t last_gesture_time = 0;
         uint32_t now = esp_timer_get_time() / 1000;
-        if (now - last_gesture_time < 2000) return;  // 2s debounce
+        if (now - last_gesture_time < 2000) return;
         last_gesture_time = now;
 
         lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
@@ -257,40 +258,43 @@ public:
         auto* display = dynamic_cast<CustomLcdDisplay*>(Board::GetInstance().GetDisplay());
         if (!display) return;
 
+        // Set flag to prevent tap from firing during/after gesture
+        display->gesture_active_ = true;
+
         switch (dir) {
             case LV_DIR_LEFT:
-                ESP_LOGW("Gesture", ">>> WAKE: SWIPE LEFT -> shake2 -> listen -> listening");
-                display->WakeWithTrigger("swipe_horizontal");
-                break;
             case LV_DIR_RIGHT:
-                ESP_LOGW("Gesture", ">>> WAKE: SWIPE RIGHT -> shake2 -> listen -> listening");
+                ESP_LOGW("Gesture", ">>> SWIPE HORIZONTAL -> shake2 -> listen -> listening");
                 display->WakeWithTrigger("swipe_horizontal");
                 break;
             case LV_DIR_TOP:
-                ESP_LOGW("Gesture", ">>> WAKE: SWIPE UP -> shake1 -> listen -> listening");
-                display->WakeWithTrigger("swipe_vertical");
-                break;
             case LV_DIR_BOTTOM:
-                ESP_LOGW("Gesture", ">>> WAKE: SWIPE DOWN -> shake1 -> listen -> listening");
+                ESP_LOGW("Gesture", ">>> SWIPE VERTICAL -> shake1 -> listen -> listening");
                 display->WakeWithTrigger("swipe_vertical");
                 break;
             default:
                 break;
         }
-        // Trigger listening after GIF chain starts
         app.StartListening();
     }
 
     static void OnEmojiClicked(lv_event_t* e) {
+        auto* display = dynamic_cast<CustomLcdDisplay*>(Board::GetInstance().GetDisplay());
+        // Skip tap if gesture just fired (within 500ms)
+        if (display && display->gesture_active_) {
+            ESP_LOGW("Gesture", "TAP skipped: gesture active");
+            display->gesture_active_ = false;
+            return;
+        }
+
         static uint32_t last_tap_time = 0;
         uint32_t now = esp_timer_get_time() / 1000;
-        if (now - last_tap_time < 2000) return;  // 2s debounce
+        if (now - last_tap_time < 2000) return;
         last_tap_time = now;
 
         auto& app = Application::GetInstance();
-        auto* display = dynamic_cast<CustomLcdDisplay*>(Board::GetInstance().GetDisplay());
         if (display) {
-            ESP_LOGW("Gesture", ">>> WAKE: TAP -> tap.gif -> listen -> listening");
+            ESP_LOGW("Gesture", ">>> TAP -> tap.gif -> listen_start -> listening");
             display->WakeWithTrigger("tap");
         }
         app.ToggleChatState();
@@ -319,8 +323,7 @@ public:
         auto& step = gif_queue_.front();
         ESP_LOGW("GifDisplay", "Queue next: %s (%s)", step.name.c_str(), step.loop ? "loop" : "once");
 
-        // If this is the final looping step, clear gif_busy_ BEFORE playing
-        // so that new state transitions can interrupt
+        // If this is the final looping step, clear gif_busy_
         if (step.loop && gif_queue_.size() == 1) {
             gif_busy_ = false;
             ESP_LOGW("GifDisplay", "Final loop step, gif_busy_=false");
@@ -328,7 +331,6 @@ public:
 
         LoadAndPlayGif(step.name.c_str(), step.loop);
 
-        // Only start watchdog for one-shot (non-looping) GIFs
         if (!step.loop && gif_watchdog_timer_) {
             lv_timer_resume(gif_watchdog_timer_);
             lv_timer_reset(gif_watchdog_timer_);
@@ -365,14 +367,14 @@ public:
         } else if (strcmp(trigger, "swipe_vertical") == 0) {
             initial_gif = "shake1.gif";
         } else {
-            initial_gif = "shake2.gif";  // swipe_horizontal or gyro
+            initial_gif = "shake2.gif";
         }
         ESP_LOGW("GifDisplay", "WakeWithTrigger('%s') -> %s", trigger, initial_gif.c_str());
         EnqueueGifChain({
             {initial_gif, false},
             {"listen_start.gif", false},
             {"listening.gif", true},
-        }, true);  // high priority
+        }, true);
         current_state_ = "listening";
     }
 
