@@ -65,8 +65,13 @@ public:
 
         uint8_t buf[6];
         if (!ReadRegs(kRegAccelXL, buf, 6)) {
+            ESP_LOGE(TAG, "ReadAccel failed: cannot read registers");
             return false;
         }
+
+        // Debug: print raw bytes
+        ESP_LOGW(TAG, "ReadAccel raw: %02X %02X %02X %02X %02X %02X",
+                 buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
 
         int16_t raw_x = static_cast<int16_t>(buf[0] | (buf[1] << 8));
         int16_t raw_y = static_cast<int16_t>(buf[2] | (buf[3] << 8));
@@ -77,6 +82,8 @@ public:
         x = raw_x / kAccelSensitivity;
         y = raw_y / kAccelSensitivity;
         z = raw_z / kAccelSensitivity;
+
+        ESP_LOGW(TAG, "ReadAccel: raw=(%d,%d,%d) -> (%.3f,%.3f,%.3f)", raw_x, raw_y, raw_z, x, y, z);
         return true;
     }
 

@@ -12,6 +12,7 @@
 #include "axp2101.h"
 #include "i2c_device.h"
 #include "assets.h"
+#include "qmi8658.h"
 
 #include <esp_log.h>
 #include <esp_lcd_panel_vendor.h>
@@ -633,8 +634,9 @@ private:
     bool dim_timer_running_ = false;
     static constexpr int kDimSeconds = 60;
 
-    // QMI8658 IMU - disabled to avoid I2C bus conflicts
-    // Qmi8658* imu_ = nullptr;
+    // QMI8658 IMU
+    Qmi8658* imu_ = nullptr;
+    TaskHandle_t imu_task_handle_ = nullptr;
 
     // Touch gesture state - handled by LVGL
     // esp_lcd_touch_handle_t touch_handle_ = nullptr;
@@ -866,8 +868,145 @@ private:
     }
 
     void InitializeQmi8658() {
-        // Disabled to avoid I2C bus conflicts with touch controller
-        ESP_LOGI(TAG, "QMI8658 IMU disabled (I2C bus conflict avoidance)");
+        // QMI8658 shares I2C bus with codec
+        // Try both possible addresses: 0x6A (SA0=LOW) and 0x6B (SA0=HIGH)
+        ESP_LOGI(TAG, "Initializing QMI8658 IMU on shared I2C bus");
+
+        // Try 0x6B first (LCD-1.85B uses this)
+        imu_ = new Qmi8658(codec_i2c_bus_, 0x6B);
+        if (imu_->Init()) {
+            ESP_LOGI(TAG, "QMI8658 IMU initialized at address 0x6B");
+            StartImuTask();
+            return;
+        }
+        delete imu_;
+        imu_ = nullptr;
+
+        // Try 0x6A (default)
+        imu_ = new Qmi8658(codec_i2c_bus_, 0x6A);
+        if (imu_->Init()) {
+            ESP_LOGI(TAG, "QMI8658 IMU initialized at address 0x6A");
+            StartImuTask();
+            return;
+        }
+        delete imu_;
+        imu_ = nullptr;
+
+        ESP_LOGW(TAG, "QMI8658 init failed at both addresses (0x6A and 0x6B)");
+    }
+
+    void StartImuTask() {
+        xTaskCreatePinnedToCore(ImuTask, "imu_task", 4 * 1024, this, 5, &imu_task_handle_, 1);
+        ESP_LOGI(TAG, "IMU motion detection task started");
+    }
+
+    static void ImuTask(void* arg) {
+        auto* self = static_cast<WaveshareEsp32s3TouchAMOLED1inch8*>(arg);
+        if (!self || !self->imu_) {
+            vTaskDelete(NULL);
+            return;
+        }
+
+        // Shake detection parameters
+        constexpr float kShakeAccelThreshold = 2.5f;  // g-force delta for shake
+        constexpr int64_t kShakeCooldownMs = 2000;     // Cooldown between shakes
+
+        // Tilt detection parameters
+        constexpr float kTiltThreshold = 0.4f;         // g-force for tilt detection
+        constexpr int64_t kTiltCooldownMs = 1500;      // Cooldown between tilts
+
+        float prev_ax = 0, prev_ay = 0, prev_az = 0;
+        bool has_prev = false;
+        int64_t last_shake_ms = 0;
+        int64_t last_tilt_ms = 0;
+        int64_t last_log_ms = 0;
+
+        while (true) {
+            float ax, ay, az;
+            if (self->imu_->ReadAccel(ax, ay, az)) {
+                int64_t now_ms = esp_timer_get_time() / 1000;
+
+                // Log every 500ms
+                if ((now_ms - last_log_ms) > 500) {
+                    last_log_ms = now_ms;
+                    ESP_LOGW("IMU", "Accel: ax=%.3f ay=%.3f az=%.3f", ax, ay, az);
+                }
+
+                if (has_prev) {
+                    // Shake detection: rapid acceleration change
+                    float dx = fabsf(ax - prev_ax);
+                    float dy = fabsf(ay - prev_ay);
+                    float dz = fabsf(az - prev_az);
+                    float shake_magnitude = dx + dy + dz;
+
+                    if (shake_magnitude > kShakeAccelThreshold &&
+                        (now_ms - last_shake_ms) > kShakeCooldownMs) {
+                        last_shake_ms = now_ms;
+                        ESP_LOGW("IMU", ">>> SHAKE detected (mag=%.2f)", shake_magnitude);
+                        // Trigger shake action
+                        self->OnShakeDetected();
+                    }
+
+                    // Tilt detection: sustained orientation change
+                    float tilt_x = fabsf(ax);
+                    float tilt_y = fabsf(ay);
+
+                    if ((tilt_x > kTiltThreshold || tilt_y > kTiltThreshold) &&
+                        (now_ms - last_tilt_ms) > kTiltCooldownMs) {
+                        last_tilt_ms = now_ms;
+                        ESP_LOGW("IMU", ">>> TILT detected (ax=%.2f, ay=%.2f)", ax, ay);
+                        // Trigger tilt action
+                        self->OnTiltDetected(ax, ay);
+                    }
+                }
+                prev_ax = ax;
+                prev_ay = ay;
+                prev_az = az;
+                has_prev = true;
+            }
+            vTaskDelay(pdMS_TO_TICKS(80));
+        }
+    }
+
+    void OnShakeDetected() {
+        auto& app = Application::GetInstance();
+        auto state = app.GetDeviceState();
+
+        // Only respond to shake in idle state
+        if (state != kDeviceStateIdle) {
+            ESP_LOGW("IMU", "Shake ignored: not idle state");
+            return;
+        }
+
+        auto* display = dynamic_cast<CustomLcdDisplay*>(Board::GetInstance().GetDisplay());
+        if (display) {
+            ESP_LOGW("IMU", "Shake -> playing shake animation");
+            display->WakeWithTrigger("shake_imu");
+            app.StartListening();
+        }
+    }
+
+    void OnTiltDetected(float ax, float ay) {
+        auto& app = Application::GetInstance();
+        auto state = app.GetDeviceState();
+
+        // Only respond to tilt in idle state
+        if (state != kDeviceStateIdle) {
+            return;
+        }
+
+        // Determine tilt direction
+        const char* direction = "unknown";
+        if (fabsf(ax) > fabsf(ay)) {
+            direction = ax > 0 ? "right" : "left";
+        } else {
+            direction = ay > 0 ? "forward" : "back";
+        }
+
+        ESP_LOGW("IMU", "Tilt direction: %s (ax=%.2f, ay=%.2f)", direction, ax, ay);
+
+        // Could trigger different animations based on tilt direction
+        // For now, just log - implement specific animations as needed
     }
 
     void InitializeGestureHandlers() {
@@ -896,7 +1035,7 @@ public:
         InitializeCodecI2c();
         InitializeTca9554();
         InitializeAxp2101();
-        // InitializeQmi8658();  // Disabled to avoid I2C bus conflicts
+        InitializeQmi8658();
         InitializeSpi();
         InitializeSH8601Display();
         InitializeTouch();
