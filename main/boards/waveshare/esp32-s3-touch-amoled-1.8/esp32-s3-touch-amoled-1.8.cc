@@ -637,6 +637,7 @@ private:
     // QMI8658 IMU
     Qmi8658* imu_ = nullptr;
     TaskHandle_t imu_task_handle_ = nullptr;
+    volatile bool shake_pending_ = false;
 
     // Touch gesture state - handled by LVGL
     // esp_lcd_touch_handle_t touch_handle_ = nullptr;
@@ -919,18 +920,11 @@ private:
         bool has_prev = false;
         int64_t last_shake_ms = 0;
         int64_t last_tilt_ms = 0;
-        int64_t last_log_ms = 0;
 
         while (true) {
             float ax, ay, az;
             if (self->imu_->ReadAccel(ax, ay, az)) {
                 int64_t now_ms = esp_timer_get_time() / 1000;
-
-                // Log every 500ms
-                if ((now_ms - last_log_ms) > 500) {
-                    last_log_ms = now_ms;
-                    ESP_LOGW("IMU", "Accel: ax=%.3f ay=%.3f az=%.3f", ax, ay, az);
-                }
 
                 if (has_prev) {
                     // Shake detection: rapid acceleration change
@@ -942,8 +936,6 @@ private:
                     if (shake_magnitude > kShakeAccelThreshold &&
                         (now_ms - last_shake_ms) > kShakeCooldownMs) {
                         last_shake_ms = now_ms;
-                        ESP_LOGW("IMU", ">>> SHAKE detected (mag=%.2f)", shake_magnitude);
-                        // Trigger shake action
                         self->OnShakeDetected();
                     }
 
@@ -954,8 +946,6 @@ private:
                     if ((tilt_x > kTiltThreshold || tilt_y > kTiltThreshold) &&
                         (now_ms - last_tilt_ms) > kTiltCooldownMs) {
                         last_tilt_ms = now_ms;
-                        ESP_LOGW("IMU", ">>> TILT detected (ax=%.2f, ay=%.2f)", ax, ay);
-                        // Trigger tilt action
                         self->OnTiltDetected(ax, ay);
                     }
                 }
@@ -972,41 +962,31 @@ private:
         auto& app = Application::GetInstance();
         auto state = app.GetDeviceState();
 
-        // Only respond to shake in idle state
-        if (state != kDeviceStateIdle) {
-            ESP_LOGW("IMU", "Shake ignored: not idle state");
+        if (state != kDeviceStateIdle || shake_pending_) {
             return;
         }
+        shake_pending_ = true;
 
-        auto* display = dynamic_cast<CustomLcdDisplay*>(Board::GetInstance().GetDisplay());
-        if (display) {
-            ESP_LOGW("IMU", "Shake -> playing shake animation");
-            display->WakeWithTrigger("shake_imu");
+        app.Schedule([this]() {
+            shake_pending_ = false;
+            auto& app = Application::GetInstance();
+            if (app.GetDeviceState() != kDeviceStateIdle) {
+                return;
+            }
             app.StartListening();
-        }
+        });
     }
 
     void OnTiltDetected(float ax, float ay) {
         auto& app = Application::GetInstance();
         auto state = app.GetDeviceState();
 
-        // Only respond to tilt in idle state
         if (state != kDeviceStateIdle) {
             return;
         }
 
-        // Determine tilt direction
-        const char* direction = "unknown";
-        if (fabsf(ax) > fabsf(ay)) {
-            direction = ax > 0 ? "right" : "left";
-        } else {
-            direction = ay > 0 ? "forward" : "back";
-        }
-
-        ESP_LOGW("IMU", "Tilt direction: %s (ax=%.2f, ay=%.2f)", direction, ax, ay);
-
         // Could trigger different animations based on tilt direction
-        // For now, just log - implement specific animations as needed
+        // For now, no action - implement specific animations as needed
     }
 
     void InitializeGestureHandlers() {

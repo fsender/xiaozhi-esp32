@@ -1,0 +1,126 @@
+W (67028) IMU: Accel: ax=0.675 ay=0.018 az=-0.826
+W (67588) IMU: Accel: ax=0.369 ay=0.320 az=-0.931
+E (67928) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:
+E (67928) task_wdt:  - IDLE0 (CPU 0)
+E (67928) task_wdt: Tasks currently running:
+E (67928) task_wdt: CPU 0: main
+E (67928) task_wdt: CPU 1: taskLVGL
+E (67928) task_wdt: Print CPU 0 (current core) backtrace
+
+
+Backtrace: 0x42107728:0x3FCA0CE0 0x4037CF1B:0x3FCA0D10 0x420CB5A5:0x3FCAE370 0x420C7FEF:0x3FCAE3B0 0x420C8020:0x3FCAE3D0 0x420C80D3:0x3FCAE410 0x420DB698:0x3FCAE440 0x42029F61:0x3FCAE490 0x42017E56:0x3FCAE4B0 0x42017EAD:0x3FCAE4D0 0x4202B206:0x3FCAE4F0 0x4202C228:0x3FCAE560 0x4202B9F8:0x3FCAE590 0x4202BC0F:0x3FCAE5E0 0x4202BF3A:0x3FCAE6A0 0x42023847:0x3FCAE6C0 0x42027582:0x3FCAE750 0x42008EA3:0x3FCAE770
+--- 0x42107728: task_wdt_timeout_handling at /home/me/.espressif/v6.0.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:436
+--- (inlined by) task_wdt_isr at /home/me/.espressif/v6.0.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:509
+--- 0x4037cf1b: _xt_lowint1 at /home/me/.espressif/v6.0.2/esp-idf/components/xtensa/xtensa_vectors.S:1264
+--- 0x420cb5a5: lv_inv_area at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_refr.c:286
+--- 0x420c7fef: invalidate_area_core at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1632
+--- (inlined by) invalidate_area_core at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1615
+--- 0x420c8020: obj_invalidate_area_internal at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1328
+--- (inlined by) obj_invalidate_area_internal at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1318
+--- 0x420c80d3: lv_obj_invalidate at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1111
+--- (inlined by) lv_obj_invalidate at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1095
+--- 0x420db698: lv_image_set_src at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/widgets/image/lv_image.c:259
+--- (inlined by) lv_image_set_src at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/widgets/image/lv_image.c:148
+--- 0x42029f61: CustomLcdDisplay::LoadAndPlayGif(char const*, bool)::{lambda()#1}::operator()() const at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:511
+--- (inlined by) void std::__invoke_impl<void, CustomLcdDisplay::LoadAndPlayGif(char const*, bool)::{lambda()#1}&>(std::__invoke_other, CustomLcdDisplay::LoadAndPlayGif(char const*, bool)::{lambda()#1}&) at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/invoke.h:63
+--- (inlined by) std::enable_if<is_invocable_r_v<void, CustomLcdDisplay::LoadAndPlayGif(char const*, bool)::{lambda()#1}&>, void>::type std::__invoke_r<void, CustomLcdDisplay::LoadAndPlayGif(char const*, bool)::{lambda()#1}&>(CustomLcdDisplay::LoadAndPlayGif(char const*, bool)::{lambda()#1}&) at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/invoke.h:113
+--- (inlined by) std::_Function_handler<void (), CustomLcdDisplay::LoadAndPlayGif(char const*, bool)::{lambda()#1}>::_M_invoke(std::_Any_data const&) at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/std_function.h:292
+--- 0x42017e56: std::function<void ()>::operator()() const at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/std_function.h:593
+--- (inlined by) LvglGif::NextFrame() at /home/me/espidf/prj/xiaozhi-esp32/main/display/lvgl_display/gif/lvgl_gif.cc:229
+--- (inlined by) LvglGif::NextFrame() at /home/me/espidf/prj/xiaozhi-esp32/main/display/lvgl_display/gif/lvgl_gif.cc:172
+--- 0x42017ead: LvglGif::Start() at /home/me/espidf/prj/xiaozhi-esp32/main/display/lvgl_display/gif/lvgl_gif.cc:76
+--- 0x4202b206: CustomLcdDisplay::LoadAndPlayGif(char const*, bool) at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:515
+--- 0x4202c228: CustomLcdDisplay::PlayNextInQueue() at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:361
+--- 0x4202b9f8: CustomLcdDisplay::EnqueueGifChain(std::vector<CustomLcdDisplay::GifStep, std::allocator<CustomLcdDisplay::GifStep> >, bool) at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:414
+--- 0x4202bc0f: CustomLcdDisplay::WakeWithTrigger(char const*) at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:428
+--- 0x4202bf3a: WaveshareEsp32s3TouchAMOLED1inch8::OnShakeDetected()::{lambda()#1}::operator()() const at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:987
+--- (inlined by) void std::__invoke_impl<void, WaveshareEsp32s3TouchAMOLED1inch8::OnShakeDetected()::{lambda()#1}&>(std::__invoke_other, WaveshareEsp32s3TouchAMOLED1inch8::OnShakeDetected()::{lambda()#1}&) at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/invoke.h:63
+--- (inlined by) std::enable_if<is_invocable_r_v<void, WaveshareEsp32s3TouchAMOLED1inch8::OnShakeDetected()::{lambda()#1}&>, void>::type std::__invoke_r<void, WaveshareEsp32s3TouchAMOLED1inch8::OnShakeDetected()::{lambda()#1}&>(WaveshareEsp32s3TouchAMOLED1inch8::OnShakeDetected()::{lambda()#1}&) at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/invoke.h:113
+--- (inlined by) std::_Function_handler<void (), WaveshareEsp32s3TouchAMOLED1inch8::OnShakeDetected()::{lambda()#1}>::_M_invoke(std::_Any_data const&) at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/std_function.h:292
+--- 0x42023847: std::function<void ()>::operator()() const at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/std_function.h:593
+--- (inlined by) Application::Run() at /home/me/espidf/prj/xiaozhi-esp32/main/application.cc:267
+--- 0x42027582: app_main at /home/me/espidf/prj/xiaozhi-esp32/main/main.cc:28
+--- 0x42008ea3: main_task at /home/me/.espressif/v6.0.2/esp-idf/components/freertos/app_startup.c:206
+
+W (68148) IMU: Accel: ax=0.319 ay=0.274 az=-0.889
+W (68468) IMU: >>> TILT detected (ax=0.40, ay=0.26)
+W (68468) IMU: Tilt direction: right (ax=0.40, ay=0.26)
+W (68708) IMU: Accel: ax=0.396 ay=0.266 az=-0.905
+W (69268) IMU: Accel: ax=0.489 ay=0.229 az=-0.873
+W (69828) IMU: Accel: ax=0.562 ay=0.333 az=-0.841
+W (69908) IMU: >>> SHAKE detected (mag=2.64)
+W (69908) IMU: Shake -> scheduling wake on main thread
+W (69988) IMU: >>> TILT detected (ax=0.09, ay=1.28)
+W (69988) IMU: Tilt direction: forward (ax=0.09, ay=1.28)
+W (70388) IMU: Accel: ax=-1.315 ay=-2.531 az=1.384
+W (70948) IMU: Accel: ax=0.464 ay=0.313 az=-0.807
+W (71508) IMU: Accel: ax=0.628 ay=0.268 az=-0.696
+W (71508) IMU: >>> TILT detected (ax=0.63, ay=0.27)
+W (71508) IMU: Tilt direction: right (ax=0.63, ay=0.27)
+W (72068) IMU: Accel: ax=0.885 ay=-0.072 az=-0.589
+W (72628) IMU: Accel: ax=0.777 ay=-0.011 az=-0.702
+W (73028) IMU: >>> TILT detected (ax=0.88, ay=-0.20)
+W (73028) IMU: Tilt direction: right (ax=0.88, ay=-0.20)
+W (73188) IMU: Accel: ax=0.712 ay=-0.176 az=-0.760
+W (73508) IMU: >>> SHAKE detected (mag=5.62)
+W (73508) IMU: Shake -> scheduling wake on main thread
+W (73748) IMU: Accel: ax=0.136 ay=0.384 az=1.689
+W (74308) IMU: Accel: ax=0.731 ay=0.007 az=-0.673
+W (74548) IMU: >>> TILT detected (ax=0.80, ay=-0.10)
+W (74548) IMU: Tilt direction: right (ax=0.80, ay=-0.10)
+W (74868) IMU: Accel: ax=0.719 ay=-0.146 az=-0.702
+W (75428) IMU: Accel: ax=1.441 ay=0.135 az=-1.039
+W (75588) IMU: >>> SHAKE detected (mag=10.27)
+W (75588) IMU: Shake -> scheduling wake on main thread
+W (75988) IMU: Accel: ax=4.031 ay=0.617 az=-2.912
+W (76068) IMU: >>> TILT detected (ax=-0.45, ay=0.22)
+W (76068) IMU: Tilt direction: left (ax=-0.45, ay=0.22)
+W (76548) IMU: Accel: ax=-0.523 ay=0.005 az=0.851
+W (77108) IMU: Accel: ax=0.760 ay=-0.208 az=-0.560
+W (77588) IMU: >>> TILT detected (ax=0.73, ay=-0.16)
+W (77588) IMU: Tilt direction: right (ax=0.73, ay=-0.16)
+W (77668) IMU: Accel: ax=0.719 ay=-0.159 az=-0.751
+E (77928) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:
+E (77928) task_wdt:  - IDLE0 (CPU 0)
+E (77928) task_wdt: Tasks currently running:
+E (77928) task_wdt: CPU 0: main
+E (77928) task_wdt: CPU 1: taskLVGL
+E (77928) task_wdt: Print CPU 0 (current core) backtrace
+
+
+Backtrace: 0x42107728:0x3FCA0CE0 0x4037CF1B:0x3FCA0D10 0x420CB5A5:0x3FCAE370 0x420C7FEF:0x3FCAE3B0 0x420C8020:0x3FCAE3D0 0x420C80D3:0x3FCAE410 0x420DB698:0x3FCAE440 0x42029F61:0x3FCAE490 0x42017E56:0x3FCAE4B0 0x42017EAD:0x3FCAE4D0 0x4202B206:0x3FCAE4F0 0x4202C228:0x3FCAE560 0x4202B9F8:0x3FCAE590 0x4202BC0F:0x3FCAE5E0 0x4202BF3A:0x3FCAE6A0 0x42023847:0x3FCAE6C0 0x42027582:0x3FCAE750 0x42008EA3:0x3FCAE770
+--- 0x42107728: task_wdt_timeout_handling at /home/me/.espressif/v6.0.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:436
+--- (inlined by) task_wdt_isr at /home/me/.espressif/v6.0.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:509
+--- 0x4037cf1b: _xt_lowint1 at /home/me/.espressif/v6.0.2/esp-idf/components/xtensa/xtensa_vectors.S:1264
+--- 0x420cb5a5: lv_inv_area at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_refr.c:286
+--- 0x420c7fef: invalidate_area_core at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1632
+--- (inlined by) invalidate_area_core at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1615
+--- 0x420c8020: obj_invalidate_area_internal at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1328
+--- (inlined by) obj_invalidate_area_internal at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1318
+--- 0x420c80d3: lv_obj_invalidate at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1111
+--- (inlined by) lv_obj_invalidate at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1095
+--- 0x420db698: lv_image_set_src at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/widgets/image/lv_image.c:259
+--- (inlined by) lv_image_set_src at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/widgets/image/lv_image.c:148
+--- 0x42029f61: CustomLcdDisplay::LoadAndPlayGif(char const*, bool)::{lambda()#1}::operator()() const at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:511
+--- (inlined by) void std::__invoke_impl<void, CustomLcdDisplay::LoadAndPlayGif(char const*, bool)::{lambda()#1}&>(std::__invoke_other, CustomLcdDisplay::LoadAndPlayGif(char const*, bool)::{lambda()#1}&) at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/invoke.h:63
+--- (inlined by) std::enable_if<is_invocable_r_v<void, CustomLcdDisplay::LoadAndPlayGif(char const*, bool)::{lambda()#1}&>, void>::type std::__invoke_r<void, CustomLcdDisplay::LoadAndPlayGif(char const*, bool)::{lambda()#1}&>(CustomLcdDisplay::LoadAndPlayGif(char const*, bool)::{lambda()#1}&) at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/invoke.h:113
+--- (inlined by) std::_Function_handler<void (), CustomLcdDisplay::LoadAndPlayGif(char const*, bool)::{lambda()#1}>::_M_invoke(std::_Any_data const&) at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/std_function.h:292
+--- 0x42017e56: std::function<void ()>::operator()() const at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/std_function.h:593
+--- (inlined by) LvglGif::NextFrame() at /home/me/espidf/prj/xiaozhi-esp32/main/display/lvgl_display/gif/lvgl_gif.cc:229
+--- (inlined by) LvglGif::NextFrame() at /home/me/espidf/prj/xiaozhi-esp32/main/display/lvgl_display/gif/lvgl_gif.cc:172
+--- 0x42017ead: LvglGif::Start() at /home/me/espidf/prj/xiaozhi-esp32/main/display/lvgl_display/gif/lvgl_gif.cc:76
+--- 0x4202b206: CustomLcdDisplay::LoadAndPlayGif(char const*, bool) at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:515
+--- 0x4202c228: CustomLcdDisplay::PlayNextInQueue() at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:361
+--- 0x4202b9f8: CustomLcdDisplay::EnqueueGifChain(std::vector<CustomLcdDisplay::GifStep, std::allocator<CustomLcdDisplay::GifStep> >, bool) at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:414
+--- 0x4202bc0f: CustomLcdDisplay::WakeWithTrigger(char const*) at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:428
+--- 0x4202bf3a: WaveshareEsp32s3TouchAMOLED1inch8::OnShakeDetected()::{lambda()#1}::operator()() const at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:987
+--- (inlined by) void std::__invoke_impl<void, WaveshareEsp32s3TouchAMOLED1inch8::OnShakeDetected()::{lambda()#1}&>(std::__invoke_other, WaveshareEsp32s3TouchAMOLED1inch8::OnShakeDetected()::{lambda()#1}&) at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/invoke.h:63
+--- (inlined by) std::enable_if<is_invocable_r_v<void, WaveshareEsp32s3TouchAMOLED1inch8::OnShakeDetected()::{lambda()#1}&>, void>::type std::__invoke_r<void, WaveshareEsp32s3TouchAMOLED1inch8::OnShakeDetected()::{lambda()#1}&>(WaveshareEsp32s3TouchAMOLED1inch8::OnShakeDetected()::{lambda()#1}&) at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/invoke.h:113
+--- (inlined by) std::_Function_handler<void (), WaveshareEsp32s3TouchAMOLED1inch8::OnShakeDetected()::{lambda()#1}>::_M_invoke(std::_Any_data const&) at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/std_function.h:292
+--- 0x42023847: std::function<void ()>::operator()() const at /home/me/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/xtensa-esp-elf/include/c++/15.2.0/bits/std_function.h:593
+--- (inlined by) Application::Run() at /home/me/espidf/prj/xiaozhi-esp32/main/application.cc:267
+--- 0x42027582: app_main at /home/me/espidf/prj/xiaozhi-esp32/main/main.cc:28
+--- 0x42008ea3: main_task at /home/me/.espressif/v6.0.2/esp-idf/components/freertos/app_startup.c:206
+
+W (78228) IMU: Accel: ax=0.657 ay=-0.176 az=-0.793
+W (78788) IMU: Accel: ax=0.581 ay=-0.173 az=-0.783

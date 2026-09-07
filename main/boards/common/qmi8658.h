@@ -27,24 +27,23 @@ public:
         }
         ESP_LOGI(TAG, "QMI8658 detected (WHO_AM_I=0x%02X)", who_am_i);
 
-        // Soft reset: set bit 6 of CTRL1
-        WriteReg(kRegCtrl1, 0x40);
-        vTaskDelay(pdMS_TO_TICKS(50));
-
-        // Configure CTRL1: address increment, I2C/SPI auto
+        // Configure CTRL1: address increment, I2C/SPI auto (no soft reset)
         WriteReg(kRegCtrl1, 0x60);
 
-        // Configure CTRL2: accel ±8g (0x08), 250Hz ODR (0x32)
-        WriteReg(kRegCtrl2, 0x08 | 0x32);
+        // Configure CTRL2: accel ±8g (range=2, bits7:4=0x20), 250Hz ODR (0x05)
+        WriteReg(kRegCtrl2, 0x20 | 0x05);
 
-        // Configure CTRL3: gyro ±512dps (0x14), 250Hz ODR (0x32)
-        WriteReg(kRegCtrl3, 0x14 | 0x32);
+        // Configure CTRL3: gyro ±512dps (range=4, bits7:4=0x40), 250Hz ODR (0x05)
+        WriteReg(kRegCtrl3, 0x40 | 0x05);
 
         // Configure CTRL5: default LPF
         WriteReg(kRegCtrl5, 0x00);
 
         // Enable accel (bit0) and gyro (bit1)
         WriteReg(kRegCtrl7, 0x03);
+
+        // Wait for sensors to start producing data
+        vTaskDelay(pdMS_TO_TICKS(100));
 
         // Verify enable took effect
         uint8_t ctrl7 = ReadReg(kRegCtrl7);
@@ -65,13 +64,8 @@ public:
 
         uint8_t buf[6];
         if (!ReadRegs(kRegAccelXL, buf, 6)) {
-            ESP_LOGE(TAG, "ReadAccel failed: cannot read registers");
             return false;
         }
-
-        // Debug: print raw bytes
-        ESP_LOGW(TAG, "ReadAccel raw: %02X %02X %02X %02X %02X %02X",
-                 buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
 
         int16_t raw_x = static_cast<int16_t>(buf[0] | (buf[1] << 8));
         int16_t raw_y = static_cast<int16_t>(buf[2] | (buf[3] << 8));
@@ -82,8 +76,6 @@ public:
         x = raw_x / kAccelSensitivity;
         y = raw_y / kAccelSensitivity;
         z = raw_z / kAccelSensitivity;
-
-        ESP_LOGW(TAG, "ReadAccel: raw=(%d,%d,%d) -> (%.3f,%.3f,%.3f)", raw_x, raw_y, raw_z, x, y, z);
         return true;
     }
 
@@ -120,7 +112,8 @@ private:
     static constexpr uint8_t kRegCtrl2 = 0x03;
     static constexpr uint8_t kRegCtrl3 = 0x04;
     static constexpr uint8_t kRegCtrl5 = 0x06;
-    static constexpr uint8_t kRegCtrl7 = 0x0E;
+    static constexpr uint8_t kRegCtrl7 = 0x08;  // Fixed: was 0x0E, correct is 0x08
+    static constexpr uint8_t kRegStatusInt = 0x2E;  // Status register - data ready bits
     static constexpr uint8_t kRegAccelXL = 0x35;
     static constexpr uint8_t kRegGyroXL = 0x3B;
 
