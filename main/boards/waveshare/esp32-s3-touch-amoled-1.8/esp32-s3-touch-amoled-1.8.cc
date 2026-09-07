@@ -74,19 +74,39 @@ static const sh8601_lcd_init_cmd_t vendor_specific_init[] = {
     {0x29, (uint8_t[]){0x00}, 0, 10}
 };
 
-// Complete emotion -> GIF mapping (ALL emotions, NO emoji fallback)
+// Map emotion + device state to GIF asset
 static const char* GetGifAssetForEmotion(const char* emotion) {
-    if (!emotion) return "idle.gif";
+    if (!emotion) emotion = "neutral";
+
+    // Check device state for more accurate GIF selection
+    auto& app = Application::GetInstance();
+    auto state = app.GetDeviceState();
+
+    // State-based overrides when emotion is neutral/default
+    if (strcmp(emotion, "neutral") == 0 || strcmp(emotion, "idle") == 0) {
+        switch (state) {
+            case kDeviceStateConnecting:  return "listen_start.gif";
+            case kDeviceStateListening:   return "listening.gif";
+            case kDeviceStateSpeaking:    return "speaking.gif";
+            case kDeviceStateIdle:        return "idle.gif";
+            default: break;
+        }
+    }
+
+    // When server sends "happy" during speaking, show speaking animation
+    if (strcmp(emotion, "happy") == 0 && state == kDeviceStateSpeaking) {
+        return "speaking.gif";
+    }
+
+    // Direct emotion mapping
     struct EmotionMap { const char* name; const char* gif; };
     static const EmotionMap kMap[] = {
-        // Core states (server-driven)
         {"neutral",    "idle.gif"},
         {"idle",       "idle.gif"},
         {"listening",  "listening.gif"},
         {"thinking",   "thinking.gif"},
         {"speaking",   "speaking.gif"},
         {"sleepy",     "sleep.gif"},
-        // Emotional expressions
         {"happy",      "tap.gif"},
         {"surprised",  "shake1.gif"},
         {"angry",      "shake2.gif"},
@@ -111,8 +131,6 @@ static const char* GetGifAssetForEmotion(const char* emotion) {
             return entry.gif;
         }
     }
-    // Unknown emotion -> default idle (never return nullptr)
-    ESP_LOGW("GifMap", "Unknown emotion '%s', using idle.gif", emotion);
     return "idle.gif";
 }
 
@@ -140,9 +158,12 @@ public:
 
         auto screen = lv_screen_active();
 
-        // Make container transparent so background shows through
+        // Make container transparent, non-scrollable, and enable event bubbling
         if (container_) {
             lv_obj_set_style_bg_opa(container_, LV_OPA_TRANSP, 0);
+            lv_obj_remove_flag(container_, LV_OBJ_FLAG_SCROLLABLE);
+            lv_obj_set_scrollbar_mode(container_, LV_SCROLLBAR_MODE_OFF);
+            lv_obj_add_flag(container_, LV_OBJ_FLAG_EVENT_BUBBLE);
         }
 
         // Load and decode bg_large.jpg using ESP ROM JPEG decoder
@@ -199,6 +220,51 @@ public:
         }
 
         ApplyWhiteTheme();
+
+        // Register touch gesture handlers on the GIF image area
+        if (emoji_image_) {
+            lv_obj_add_flag(emoji_image_, LV_OBJ_FLAG_CLICKABLE);
+            lv_obj_add_event_cb(emoji_image_, OnEmojiClicked, LV_EVENT_CLICKED, NULL);
+            ESP_LOGW("CustomDisplay", "Tap handler on emoji_image_");
+        }
+        if (emoji_label_) {
+            lv_obj_add_flag(emoji_label_, LV_OBJ_FLAG_CLICKABLE);
+            lv_obj_add_event_cb(emoji_label_, OnEmojiClicked, LV_EVENT_CLICKED, NULL);
+        }
+        // Swipe gesture on screen
+        lv_obj_add_event_cb(screen, OnGesture, LV_EVENT_GESTURE, NULL);
+        ESP_LOGW("CustomDisplay", "All gesture handlers registered");
+    }
+
+    static void OnGesture(lv_event_t* e) {
+        lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
+        auto& app = Application::GetInstance();
+        switch (dir) {
+            case LV_DIR_LEFT:
+                ESP_LOGW("Gesture", ">>> WAKE: SWIPE LEFT -> StartListening");
+                app.StartListening();
+                break;
+            case LV_DIR_RIGHT:
+                ESP_LOGW("Gesture", ">>> WAKE: SWIPE RIGHT -> ToggleChatState");
+                app.ToggleChatState();
+                break;
+            case LV_DIR_TOP:
+                ESP_LOGW("Gesture", ">>> WAKE: SWIPE UP -> StartListening");
+                app.StartListening();
+                break;
+            case LV_DIR_BOTTOM:
+                ESP_LOGW("Gesture", ">>> WAKE: SWIPE DOWN -> ToggleChatState");
+                app.ToggleChatState();
+                break;
+            default:
+                break;
+        }
+    }
+
+    static void OnEmojiClicked(lv_event_t* e) {
+        auto& app = Application::GetInstance();
+        ESP_LOGW("Gesture", ">>> WAKE: TAP on character -> ToggleChatState");
+        app.ToggleChatState();
     }
 
     virtual void SetTheme(Theme* theme) override {
@@ -218,43 +284,52 @@ public:
         DisplayLockGuard lock(this);
 
         lv_color_t white = lv_color_hex(0xFFFFFF);
-        lv_color_t dark_blue = lv_color_hex(0x1A3A5C);
+        lv_color_t chat_text = lv_color_hex(0x0F6DB7);
 
-        // All text elements: white
-        if (status_label_) lv_obj_set_style_text_color(status_label_, white, 0);
+        // Hide top bar (WiFi, battery, mute icons)
+        if (top_bar_) lv_obj_add_flag(top_bar_, LV_OBJ_FLAG_HIDDEN);
+
+        // Status bar: white text for time, no background
+        if (status_label_) {
+            lv_obj_set_style_text_color(status_label_, white, 0);
+            lv_obj_set_style_bg_opa(status_bar_, LV_OPA_TRANSP, 0);
+        }
         if (notification_label_) lv_obj_set_style_text_color(notification_label_, white, 0);
-        if (network_label_) lv_obj_set_style_text_color(network_label_, white, 0);
-        if (mute_label_) lv_obj_set_style_text_color(mute_label_, white, 0);
-        if (battery_label_) lv_obj_set_style_text_color(battery_label_, white, 0);
-        if (emoji_label_) lv_obj_set_style_text_color(emoji_label_, white, 0);
 
-        // Content area: white semi-transparent + dark blue text
+        // Content area: white rounded rectangle, 85% opacity, blue text
         if (content_) {
-            lv_obj_set_style_bg_color(content_, lv_color_hex(0xFFFFFF), 0);
-            lv_obj_set_style_bg_opa(content_, LV_OPA_80, 0);
+            lv_obj_set_style_bg_color(content_, white, 0);
+            lv_obj_set_style_bg_opa(content_, 216, 0);  // 85% opacity
             lv_obj_set_style_radius(content_, 16, 0);
             lv_obj_set_style_border_width(content_, 0, 0);
-            lv_obj_set_style_text_color(content_, dark_blue, 0);
+            lv_obj_set_style_text_color(content_, chat_text, 0);
         }
         if (chat_message_label_) {
-            lv_obj_set_style_text_color(chat_message_label_, dark_blue, 0);
+            lv_obj_set_style_text_color(chat_message_label_, chat_text, 0);
         }
     }
 
     virtual void SetEmotion(const char* emotion) override {
         if (!emotion) emotion = "neutral";
+        ESP_LOGW("GifDisplay", "=== SetEmotion('%s') ===", emotion);
+
         if (!emoji_image_) {
-            ESP_LOGW("GifDisplay", "SetEmotion('%s') called but emoji_image_ is null", emotion);
+            ESP_LOGW("GifDisplay", "emoji_image_ is null, calling parent");
+            SpiLcdDisplay::SetEmotion(emotion);
             return;
         }
 
         const char* gif_name = GetGifAssetForEmotion(emotion);
-        ESP_LOGW("GifDisplay", "SetEmotion('%s') -> GIF '%s'", emotion, gif_name);
+        ESP_LOGW("GifDisplay", "Mapped '%s' -> '%s'", emotion, gif_name);
 
         void* ptr = nullptr;
         size_t size = 0;
-        if (!Assets::GetInstance().GetAssetData(gif_name, ptr, size)) {
-            ESP_LOGE("GifDisplay", "GIF asset NOT found in partition: %s", gif_name);
+        bool found = Assets::GetInstance().GetAssetData(gif_name, ptr, size);
+        ESP_LOGW("GifDisplay", "GetAssetData('%s') = %s, size=%u", gif_name, found ? "OK" : "FAIL", (unsigned)size);
+
+        if (!found) {
+            ESP_LOGW("GifDisplay", "GIF not found, falling back to parent SetEmotion");
+            SpiLcdDisplay::SetEmotion(emotion);
             return;
         }
 
@@ -265,7 +340,10 @@ public:
         }
 
         lv_img_dsc_t tmp_dsc = {};
+        tmp_dsc.header.magic = LV_IMAGE_HEADER_MAGIC;
+        tmp_dsc.header.cf = LV_COLOR_FORMAT_ARGB8888;
         tmp_dsc.data = static_cast<const uint8_t*>(ptr);
+        tmp_dsc.data_size = size;
         gif_controller_ = std::make_unique<LvglGif>(&tmp_dsc);
 
         if (gif_controller_ && gif_controller_->IsLoaded()) {
@@ -276,11 +354,12 @@ public:
 
             if (emoji_label_) lv_obj_add_flag(emoji_label_, LV_OBJ_FLAG_HIDDEN);
             lv_obj_remove_flag(emoji_image_, LV_OBJ_FLAG_HIDDEN);
-            ESP_LOGW("GifDisplay", ">>> PLAYING: %s (emotion: %s, %dx%d)", gif_name, emotion,
+            ESP_LOGW("GifDisplay", ">>> NOW PLAYING: %s (%dx%d)", gif_name,
                      gif_controller_->width(), gif_controller_->height());
         } else {
-            ESP_LOGE("GifDisplay", "Failed to decode GIF: %s", gif_name);
+            ESP_LOGE("GifDisplay", "GIF decode FAILED: %s", gif_name);
             gif_controller_.reset();
+            SpiLcdDisplay::SetEmotion(emotion);
         }
     }
 };
@@ -563,8 +642,9 @@ private:
     }
 
     void InitializeGestureHandlers() {
-        // Touch gestures are handled by LVGL's built-in event system.
-        ESP_LOGI(TAG, "Gesture handlers: using LVGL event system");
+        // Gesture handlers registered in CustomLcdDisplay::SetupUI()
+        // where emoji_image_ and emoji_label_ are accessible
+        ESP_LOGW(TAG, "Gesture handlers deferred to display SetupUI");
     }
 
     // 初始化工具

@@ -1,0 +1,51 @@
+I (261448) MQTT: Session ID: d68349a7
+I (261458) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (261458) wifi:Set ps type: 0, coexist: 0
+
+I (261458) Application: Wake word detected: 你好兴福龙
+I (261508) StateMachine: State: connecting -> listening
+W (261508) GifDisplay: === SetEmotion('neutral') ===
+W (261508) GifDisplay: Mapped 'neutral' -> 'idle.gif'
+W (261508) GifDisplay: GetAssetData('idle.gif') = OK, size=542031
+I (261618) Application: >> 你好兴福龙
+W (261678) GifDisplay: >>> NOW PLAYING: idle.gif (320x320)
+I (261728) StateMachine: State: listening -> speaking
+W (261948) GifDisplay: === SetEmotion('happy') ===
+W (261948) GifDisplay: Mapped 'happy' -> 'tap.gif'
+W (261948) GifDisplay: GetAssetData('tap.gif') = OK, size=393920
+W (262028) GifDisplay: >>> NOW PLAYING: tap.gif (320x320)
+I (262138) Application: << 你好呀，我是兴福龙，今天想聊点啥开心的事吗？
+W (266818) MQTT: Received audio packet with wrong sequence: 81, expected: 80
+I (267008) StateMachine: State: speaking -> listening
+W (267068) GifDisplay: === SetEmotion('neutral') ===
+W (267068) GifDisplay: Mapped 'neutral' -> 'idle.gif'
+W (267068) GifDisplay: GetAssetData('idle.gif') = OK, size=542031
+W (267148) GifDisplay: >>> NOW PLAYING: idle.gif (320x320)
+I (269718) Application: >> 今天天气如何？
+I (269808) StateMachine: State: listening -> speaking
+I (270428) Application: << % get_weather...
+W (270788) GifDisplay: === SetEmotion('happy') ===
+W (270788) GifDisplay: Mapped 'happy' -> 'tap.gif'
+W (270788) GifDisplay: GetAssetData('tap.gif') = OK, size=393920
+W (270898) GifDisplay: >>> NOW PLAYING: tap.gif (320x320)
+I (271188) Application: << 金华现在天气晴，气温26℃，体感27℃，东风3级，湿度60%，能见度18公里。晚上出来散步挺舒服的～要不要再听听音乐放松一下？
+W (273438) MQTT: Received audio packet with wrong sequence: 123, expected: 122
+I (278998) SystemInfo: free sram: 118655 minimal sram: 81899
+I (287058) StateMachine: State: speaking -> listening
+W (287178) GifDisplay: === SetEmotion('neutral') ===
+W (287178) GifDisplay: Mapped 'neutral' -> 'idle.gif'
+W (287178) GifDisplay: GetAssetData('idle.gif') = OK, size=542031
+W (287268) GifDisplay: >>> NOW PLAYING: idle.gif (320x320)
+I (290218) MQTT: Closing audio channel, send_goodbye: 1
+I (290228) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (290228) wifi:Set ps type: 2, coexist: 0
+
+I (290278) StateMachine: State: listening -> idle
+W (290278) GifDisplay: === SetEmotion('neutral') ===
+W (290278) GifDisplay: Mapped 'neutral' -> 'idle.gif'
+W (290278) GifDisplay: GetAssetData('idle.gif') = OK, size=542031
+I (290298) MQTT: Received goodbye message, session_id: d68349a7
+W (290468) GifDisplay: >>> NOW PLAYING: idle.gif (320x320)
+I (290468) MQTT: Closing audio channel, send_goodbye: 0
+I (290468) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (290478) wifi:Set ps type: 2, coexist: 0
