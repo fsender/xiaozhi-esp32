@@ -253,12 +253,19 @@ public:
         if (now - last_gesture_time < 2000) return;
         last_gesture_time = now;
 
-        lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
         auto& app = Application::GetInstance();
+        auto state = app.GetDeviceState();
+
+        // Only respond to swipe in idle state
+        if (state != kDeviceStateIdle) {
+            ESP_LOGW("Gesture", "Swipe ignored: state=%d (not idle)", state);
+            return;
+        }
+
+        lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
         auto* display = dynamic_cast<CustomLcdDisplay*>(Board::GetInstance().GetDisplay());
         if (!display) return;
 
-        // Set flag to prevent tap from firing during/after gesture
         display->gesture_active_ = true;
 
         switch (dir) {
@@ -293,11 +300,29 @@ public:
         last_tap_time = now;
 
         auto& app = Application::GetInstance();
-        if (display) {
-            ESP_LOGW("Gesture", ">>> TAP -> tap.gif -> listen_start -> listening");
-            display->WakeWithTrigger("tap");
+        auto state = app.GetDeviceState();
+
+        if (state == kDeviceStateIdle) {
+            // Idle: tap to wake with GIF chain
+            if (display) {
+                ESP_LOGW("Gesture", ">>> TAP (idle) -> tap.gif -> listen_start -> listening");
+                display->WakeWithTrigger("tap");
+            }
+            app.ToggleChatState();
+        } else if (state == kDeviceStateListening || state == kDeviceStateSpeaking) {
+            // Listening/Speaking: tap to interrupt
+            ESP_LOGW("Gesture", ">>> TAP (listening/speaking) -> interrupt -> idle");
+            if (display && display->gif_busy_) {
+                // Currently playing a chain (shake/listen_start) - replace queue with idle
+                ESP_LOGW("Gesture", "Chain active, replacing queue with idle.gif");
+                display->gif_queue_.clear();
+                display->gif_queue_.push_back({"idle.gif", true});
+                display->current_state_ = "idle";
+            }
+            app.ToggleChatState();
+        } else {
+            ESP_LOGW("Gesture", "TAP ignored: state=%d", state);
         }
-        app.ToggleChatState();
     }
 
     // --- GIF Queue System ---
@@ -318,6 +343,8 @@ public:
             gif_busy_ = false;
             if (gif_watchdog_timer_) lv_timer_pause(gif_watchdog_timer_);
             ESP_LOGW("GifDisplay", "Queue empty, gif_busy_=false");
+            // Apply current state GIF (in case it was skipped during busy)
+            ApplyCurrentStateGif();
             return;
         }
         auto& step = gif_queue_.front();
@@ -327,6 +354,7 @@ public:
         if (step.loop && gif_queue_.size() == 1) {
             gif_busy_ = false;
             ESP_LOGW("GifDisplay", "Final loop step, gif_busy_=false");
+            // Don't apply current state here - let the looping GIF play
         }
 
         LoadAndPlayGif(step.name.c_str(), step.loop);
@@ -336,6 +364,32 @@ public:
             lv_timer_reset(gif_watchdog_timer_);
         } else if (step.loop && gif_watchdog_timer_) {
             lv_timer_pause(gif_watchdog_timer_);
+        }
+    }
+
+    void ApplyCurrentStateGif() {
+        const char* target_gif = GetStateTargetGif();
+        std::string target_state;
+        if (strstr(target_gif, "idle")) target_state = "idle";
+        else if (strstr(target_gif, "listening")) target_state = "listening";
+        else if (strstr(target_gif, "speaking")) target_state = "speaking";
+        else if (strstr(target_gif, "thinking")) target_state = "thinking";
+        else target_state = "idle";
+
+        if (current_state_ != target_state) {
+            ESP_LOGW("GifDisplay", "State mismatch after busy: %s -> %s, applying transition",
+                     current_state_.c_str(), target_state.c_str());
+            const char* trans_gif = GetTransitionGif(current_state_.c_str(), target_state.c_str());
+            if (trans_gif) {
+                EnqueueGifChain({{trans_gif, false}, {target_gif, true}}, false);
+            } else {
+                EnqueueGifChain({{target_gif, true}}, false);
+            }
+            current_state_ = target_state;
+        } else if (gif_queue_.empty()) {
+            // Same state but queue is empty - just play the target GIF
+            ESP_LOGW("GifDisplay", "Applying state GIF: %s", target_gif);
+            LoadAndPlayGif(target_gif, true);
         }
     }
 
