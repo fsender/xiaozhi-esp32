@@ -150,7 +150,14 @@ public:
     }
 
     lv_obj_t* bg_img_ = nullptr;
-    uint8_t* bg_pixels_ = nullptr;  // Decoded JPEG pixel buffer (PSRAM)
+    uint8_t* bg_pixels_ = nullptr;
+
+    // GIF queue system
+    struct GifStep { std::string name; bool loop; };
+    std::vector<GifStep> gif_queue_;
+    bool gif_busy_ = false;
+    lv_timer_t* gif_watchdog_timer_ = nullptr;
+    std::string current_state_ = "idle";
 
     virtual void SetupUI() override {
         SpiLcdDisplay::SetupUI();
@@ -221,6 +228,9 @@ public:
 
         ApplyWhiteTheme();
 
+        // Initialize GIF watchdog timer for queue system
+        InitGifWatchdog();
+
         // Register touch gesture handlers on the GIF image area
         if (emoji_image_) {
             lv_obj_add_flag(emoji_image_, LV_OBJ_FLAG_CLICKABLE);
@@ -237,35 +247,136 @@ public:
     }
 
     static void OnGesture(lv_event_t* e) {
+        static uint32_t last_gesture_time = 0;
+        uint32_t now = esp_timer_get_time() / 1000;
+        if (now - last_gesture_time < 2000) return;  // 2s debounce
+        last_gesture_time = now;
+
         lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
         auto& app = Application::GetInstance();
+        auto* display = dynamic_cast<CustomLcdDisplay*>(Board::GetInstance().GetDisplay());
+        if (!display) return;
+
         switch (dir) {
             case LV_DIR_LEFT:
-                ESP_LOGW("Gesture", ">>> WAKE: SWIPE LEFT -> StartListening");
-                app.StartListening();
+                ESP_LOGW("Gesture", ">>> WAKE: SWIPE LEFT -> shake2 -> listen -> listening");
+                display->WakeWithTrigger("swipe_horizontal");
                 break;
             case LV_DIR_RIGHT:
-                ESP_LOGW("Gesture", ">>> WAKE: SWIPE RIGHT -> ToggleChatState");
-                app.ToggleChatState();
+                ESP_LOGW("Gesture", ">>> WAKE: SWIPE RIGHT -> shake2 -> listen -> listening");
+                display->WakeWithTrigger("swipe_horizontal");
                 break;
             case LV_DIR_TOP:
-                ESP_LOGW("Gesture", ">>> WAKE: SWIPE UP -> StartListening");
-                app.StartListening();
+                ESP_LOGW("Gesture", ">>> WAKE: SWIPE UP -> shake1 -> listen -> listening");
+                display->WakeWithTrigger("swipe_vertical");
                 break;
             case LV_DIR_BOTTOM:
-                ESP_LOGW("Gesture", ">>> WAKE: SWIPE DOWN -> ToggleChatState");
-                app.ToggleChatState();
+                ESP_LOGW("Gesture", ">>> WAKE: SWIPE DOWN -> shake1 -> listen -> listening");
+                display->WakeWithTrigger("swipe_vertical");
                 break;
             default:
                 break;
         }
+        // Trigger listening after GIF chain starts
+        app.StartListening();
     }
 
     static void OnEmojiClicked(lv_event_t* e) {
+        static uint32_t last_tap_time = 0;
+        uint32_t now = esp_timer_get_time() / 1000;
+        if (now - last_tap_time < 2000) return;  // 2s debounce
+        last_tap_time = now;
+
         auto& app = Application::GetInstance();
-        ESP_LOGW("Gesture", ">>> WAKE: TAP on character -> ToggleChatState");
+        auto* display = dynamic_cast<CustomLcdDisplay*>(Board::GetInstance().GetDisplay());
+        if (display) {
+            ESP_LOGW("Gesture", ">>> WAKE: TAP -> tap.gif -> listen -> listening");
+            display->WakeWithTrigger("tap");
+        }
         app.ToggleChatState();
     }
+
+    // --- GIF Queue System ---
+    void InitGifWatchdog() {
+        // Use LVGL timer - runs in LVGL task context, safe for lv_image_set_src
+        gif_watchdog_timer_ = lv_timer_create([](lv_timer_t* timer) {
+            auto* self = static_cast<CustomLcdDisplay*>(lv_timer_get_user_data(timer));
+            if (self->gif_controller_ && !self->gif_controller_->IsPlaying() && !self->gif_queue_.empty()) {
+                self->gif_queue_.erase(self->gif_queue_.begin());
+                self->PlayNextInQueue();
+            }
+        }, 200, this);
+        lv_timer_pause(gif_watchdog_timer_);  // Start paused
+    }
+
+    void PlayNextInQueue() {
+        if (gif_queue_.empty()) {
+            gif_busy_ = false;
+            if (gif_watchdog_timer_) lv_timer_pause(gif_watchdog_timer_);
+            ESP_LOGW("GifDisplay", "Queue empty, gif_busy_=false");
+            return;
+        }
+        auto& step = gif_queue_.front();
+        ESP_LOGW("GifDisplay", "Queue next: %s (%s)", step.name.c_str(), step.loop ? "loop" : "once");
+
+        // If this is the final looping step, clear gif_busy_ BEFORE playing
+        // so that new state transitions can interrupt
+        if (step.loop && gif_queue_.size() == 1) {
+            gif_busy_ = false;
+            ESP_LOGW("GifDisplay", "Final loop step, gif_busy_=false");
+        }
+
+        LoadAndPlayGif(step.name.c_str(), step.loop);
+
+        // Only start watchdog for one-shot (non-looping) GIFs
+        if (!step.loop && gif_watchdog_timer_) {
+            lv_timer_resume(gif_watchdog_timer_);
+            lv_timer_reset(gif_watchdog_timer_);
+        } else if (step.loop && gif_watchdog_timer_) {
+            lv_timer_pause(gif_watchdog_timer_);
+        }
+    }
+
+    void EnqueueGifChain(std::vector<GifStep> steps, bool high_priority) {
+        if (gif_busy_ && !high_priority) {
+            ESP_LOGW("GifDisplay", "Busy, ignoring normal priority chain");
+            return;
+        }
+        if (high_priority) {
+            if (gif_controller_) {
+                gif_controller_->Stop();
+                gif_controller_.reset();
+            }
+            if (gif_watchdog_timer_) lv_timer_pause(gif_watchdog_timer_);
+        }
+        // ALL chains set gif_busy_ to prevent interruption during playback
+        gif_busy_ = true;
+        gif_queue_ = steps;
+        ESP_LOGW("GifDisplay", "Enqueued %d steps, priority=%s, gif_busy_=true",
+                 (int)steps.size(), high_priority ? "HIGH" : "normal");
+        PlayNextInQueue();
+    }
+
+    // Wake-up trigger: high priority chain
+    void WakeWithTrigger(const char* trigger) {
+        std::string initial_gif;
+        if (strcmp(trigger, "tap") == 0 || strcmp(trigger, "button") == 0) {
+            initial_gif = "tap.gif";
+        } else if (strcmp(trigger, "swipe_vertical") == 0) {
+            initial_gif = "shake1.gif";
+        } else {
+            initial_gif = "shake2.gif";  // swipe_horizontal or gyro
+        }
+        ESP_LOGW("GifDisplay", "WakeWithTrigger('%s') -> %s", trigger, initial_gif.c_str());
+        EnqueueGifChain({
+            {initial_gif, false},
+            {"listen_start.gif", false},
+            {"listening.gif", true},
+        }, true);  // high priority
+        current_state_ = "listening";
+    }
+
+    // --- End GIF Queue System ---
 
     virtual void SetTheme(Theme* theme) override {
         SpiLcdDisplay::SetTheme(theme);
@@ -309,31 +420,14 @@ public:
         }
     }
 
-    virtual void SetEmotion(const char* emotion) override {
-        if (!emotion) emotion = "neutral";
-        ESP_LOGW("GifDisplay", "=== SetEmotion('%s') ===", emotion);
-
-        if (!emoji_image_) {
-            ESP_LOGW("GifDisplay", "emoji_image_ is null, calling parent");
-            SpiLcdDisplay::SetEmotion(emotion);
-            return;
-        }
-
-        const char* gif_name = GetGifAssetForEmotion(emotion);
-        ESP_LOGW("GifDisplay", "Mapped '%s' -> '%s'", emotion, gif_name);
-
+    bool LoadAndPlayGif(const char* gif_name, bool loop) {
         void* ptr = nullptr;
         size_t size = 0;
-        bool found = Assets::GetInstance().GetAssetData(gif_name, ptr, size);
-        ESP_LOGW("GifDisplay", "GetAssetData('%s') = %s, size=%u", gif_name, found ? "OK" : "FAIL", (unsigned)size);
-
-        if (!found) {
-            ESP_LOGW("GifDisplay", "GIF not found, falling back to parent SetEmotion");
-            SpiLcdDisplay::SetEmotion(emotion);
-            return;
+        if (!Assets::GetInstance().GetAssetData(gif_name, ptr, size)) {
+            ESP_LOGE("GifDisplay", "Asset not found: %s", gif_name);
+            return false;
         }
 
-        DisplayLockGuard lock(this);
         if (gif_controller_) {
             gif_controller_->Stop();
             gif_controller_.reset();
@@ -346,20 +440,99 @@ public:
         tmp_dsc.data_size = size;
         gif_controller_ = std::make_unique<LvglGif>(&tmp_dsc);
 
-        if (gif_controller_ && gif_controller_->IsLoaded()) {
-            gif_controller_->SetFrameCallback(
-                [this]() { lv_image_set_src(emoji_image_, gif_controller_->image_dsc()); });
-            lv_image_set_src(emoji_image_, gif_controller_->image_dsc());
-            gif_controller_->Start();
-
-            if (emoji_label_) lv_obj_add_flag(emoji_label_, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_remove_flag(emoji_image_, LV_OBJ_FLAG_HIDDEN);
-            ESP_LOGW("GifDisplay", ">>> NOW PLAYING: %s (%dx%d)", gif_name,
-                     gif_controller_->width(), gif_controller_->height());
-        } else {
-            ESP_LOGE("GifDisplay", "GIF decode FAILED: %s", gif_name);
+        if (!gif_controller_ || !gif_controller_->IsLoaded()) {
+            ESP_LOGE("GifDisplay", "GIF decode failed: %s", gif_name);
             gif_controller_.reset();
+            return false;
+        }
+
+        if (!loop) {
+            gif_controller_->SetLoopCount(1);
+        }
+
+        gif_controller_->SetFrameCallback(
+            [this]() { lv_image_set_src(emoji_image_, gif_controller_->image_dsc()); });
+
+        // Don't call lv_image_set_src here - let the GIF timer handle all frame updates
+        // to avoid blocking the main task with LVGL rendering
+        gif_controller_->Start();
+
+        if (emoji_label_) lv_obj_add_flag(emoji_label_, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_remove_flag(emoji_image_, LV_OBJ_FLAG_HIDDEN);
+
+        ESP_LOGW("GifDisplay", ">>> PLAYING: %s (%s, %dx%d)", gif_name,
+                 loop ? "loop" : "once", gif_controller_->width(), gif_controller_->height());
+        return true;
+    }
+
+    // Get state-based target GIF
+    const char* GetStateTargetGif() {
+        auto state = Application::GetInstance().GetDeviceState();
+        switch (state) {
+            case kDeviceStateConnecting:  return "listen_start.gif";
+            case kDeviceStateListening:   return "listening.gif";
+            case kDeviceStateSpeaking:    return "speaking.gif";
+            default:                      return "idle.gif";
+        }
+    }
+
+    // Get transition GIF for state change (only during conversation)
+    const char* GetTransitionGif(const char* from_state, const char* to_state) {
+        if (!from_state || !to_state) return nullptr;
+        std::string from(from_state), to(to_state);
+
+        if (from == "listening" && to == "speaking") return "listen_to_speak.gif";
+        if (from == "speaking" && to == "listening") return "listen_start.gif";
+        if (from == "listening" && to == "thinking") return "listen_to_think.gif";
+        if (from == "listening" && to == "idle")      return "listen_end.gif";
+        return nullptr;
+    }
+
+    virtual void SetEmotion(const char* emotion) override {
+        if (!emotion) emotion = "neutral";
+        if (!emoji_image_) {
             SpiLcdDisplay::SetEmotion(emotion);
+            return;
+        }
+
+        const char* target_gif = GetStateTargetGif();
+        std::string prev_state = current_state_;
+        std::string target_state;
+        if (strstr(target_gif, "idle")) target_state = "idle";
+        else if (strstr(target_gif, "listening")) target_state = "listening";
+        else if (strstr(target_gif, "speaking")) target_state = "speaking";
+        else if (strstr(target_gif, "thinking")) target_state = "thinking";
+        else target_state = "idle";
+
+        ESP_LOGW("GifDisplay", "SetEmotion('%s') state: %s -> %s, gif: %s, busy=%d",
+                 emotion, prev_state.c_str(), target_state.c_str(), target_gif, gif_busy_);
+
+        // Always update state tracking
+        current_state_ = target_state;
+
+        // Skip GIF changes if high-priority chain is active
+        if (gif_busy_) {
+            ESP_LOGW("GifDisplay", "gif_busy_, will apply when chain finishes");
+            return;
+        }
+
+        // Check for state transition (only during conversation)
+        const char* trans_gif = nullptr;
+        if (prev_state != target_state) {
+            trans_gif = GetTransitionGif(prev_state.c_str(), target_state.c_str());
+        }
+
+        DisplayLockGuard lock(this);
+
+        if (trans_gif) {
+            ESP_LOGW("GifDisplay", "State transition: %s -> %s -> %s",
+                     prev_state.c_str(), trans_gif, target_gif);
+            EnqueueGifChain({
+                {trans_gif, false},
+                {target_gif, true},
+            }, false);
+        } else {
+            EnqueueGifChain({{target_gif, true}}, false);
         }
     }
 };

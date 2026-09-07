@@ -1,0 +1,50 @@
+W (19198) Gesture: >>> WAKE: TAP -> tap.gif -> listen -> listening
+W (19198) GifDisplay: WakeWithTrigger('tap') -> tap.gif
+W (19208) GifDisplay: Enqueued 3 steps, priority=HIGH
+W (19208) GifDisplay: Queue next: tap.gif (once)
+W (19248) GifDisplay: >>> PLAYING: tap.gif (once, 280x280)
+I (19248) StateMachine: State: idle -> connecting
+W (19288) GifDisplay: SetEmotion('neutral') skipped: gif_busy_
+I (19288) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (19288) wifi:Set ps type: 0, coexist: 0
+
+I (19378) MQTT: Session ID: 857c58e1
+I (19378) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (19378) wifi:Set ps type: 0, coexist: 0
+
+I (19378) StateMachine: State: connecting -> listening
+W (19438) GifDisplay: SetEmotion('neutral') skipped: gif_busy_
+W (22048) GifDisplay: Queue next: listen_start.gif (once)
+W (31778) Gesture: >>> WAKE: TAP -> tap.gif -> listen -> listening
+W (31778) GifDisplay: WakeWithTrigger('tap') -> tap.gif
+W (31778) GifDisplay: Enqueued 3 steps, priority=HIGH
+W (31788) GifDisplay: Queue next: tap.gif (once)
+W (31828) GifDisplay: >>> PLAYING: tap.gif (once, 280x280)
+E (32048) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:
+E (32048) task_wdt:  - IDLE0 (CPU 0)
+E (32048) task_wdt: Tasks currently running:
+E (32048) task_wdt: CPU 0: esp_timer
+E (32048) task_wdt: CPU 1: IDLE1
+E (32048) task_wdt: Print CPU 0 (current core) backtrace
+
+
+Backtrace: 0x42106B34:0x3FCA0CE0 0x4037CF1B:0x3FCA0D10 0x420CA9B1:0x3FCAC220 0x420C73FB:0x3FCAC260 0x420C742C:0x3FCAC280 0x420C74DF:0x3FCAC2C0 0x420DAAA4:0x3FCAC2F0 0x4202B02D:0x3FCAC340 0x4202B0E6:0x3FCAC3C0 0x421027F8:0x3FCAC3E0
+--- 0x42106b34: task_wdt_timeout_handling at /home/me/.espressif/v6.0.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:436
+--- (inlined by) task_wdt_isr at /home/me/.espressif/v6.0.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:509
+--- 0x4037cf1b: _xt_lowint1 at /home/me/.espressif/v6.0.2/esp-idf/components/xtensa/xtensa_vectors.S:1264
+--- 0x420ca9b1: lv_inv_area at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_refr.c:286
+--- 0x420c73fb: invalidate_area_core at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1632
+--- (inlined by) invalidate_area_core at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1615
+--- 0x420c742c: obj_invalidate_area_internal at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1328
+--- (inlined by) obj_invalidate_area_internal at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1318
+--- 0x420c74df: lv_obj_invalidate at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1111
+--- (inlined by) lv_obj_invalidate at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/core/lv_obj_pos.c:1095
+--- 0x420daaa4: lv_image_set_src at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/widgets/image/lv_image.c:259
+--- (inlined by) lv_image_set_src at /home/me/espidf/prj/xiaozhi-esp32/managed_components/lvgl__lvgl/src/widgets/image/lv_image.c:148
+--- 0x4202b02d: CustomLcdDisplay::LoadAndPlayGif(char const*, bool) at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:439
+--- (inlined by) CustomLcdDisplay::PlayNextInQueue() at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:319
+--- 0x4202b0e6: CustomLcdDisplay::InitGifWatchdog()::{lambda(void*)#1}::operator()(void*) const at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:300
+--- (inlined by) CustomLcdDisplay::InitGifWatchdog()::{lambda(void*)#1}::operator()(void*) const at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:296
+--- (inlined by) CustomLcdDisplay::InitGifWatchdog()::{lambda(void*)#1}::_FUN(void*) at /home/me/espidf/prj/xiaozhi-esp32/main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc:302
+--- 0x421027f8: timer_process_alarm at /home/me/.espressif/v6.0.2/esp-idf/components/esp_timer/src/esp_timer.c:437
+--- (inlined by) timer_task at /home/me/.espressif/v6.0.2/esp-idf/components/esp_timer/src/esp_timer.c:463

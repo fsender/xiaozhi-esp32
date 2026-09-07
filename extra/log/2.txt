@@ -1,0 +1,36 @@
+
+I (43188) Application: Wake word detected: 你好兴福龙
+I (43238) StateMachine: State: connecting -> listening
+W (43238) GifDisplay: === SetEmotion('neutral') ===
+W (43238) GifDisplay: Mapped 'neutral' -> 'listening.gif' (state=5)
+W (43288) GifDisplay: >>> PLAYING: listening.gif (loop, 280x280)
+I (43328) Application: >> 你好兴福龙
+I (43348) StateMachine: State: listening -> speaking
+W (44008) GifDisplay: === SetEmotion('laughing') ===
+W (44008) GifDisplay: Mapped 'laughing' -> 'tap.gif' (state=6)
+W (44088) GifDisplay: >>> PLAYING: tap.gif (loop, 280x280)
+I (44228) Application: << 你好呀！我是兴福龙，一只调皮快乐的小龙人！很高兴认识你哦！
+W (45958) MQTT: Received audio packet with wrong sequence: 28, expected: 27
+W (46318) MQTT: Received audio packet with wrong sequence: 34, expected: 32
+W (46748) MQTT: Received audio packet with wrong sequence: 41, expected: 40
+W (47348) MQTT: Received audio packet with wrong sequence: 51, expected: 50
+W (47588) MQTT: Received audio packet with wrong sequence: 55, expected: 54
+W (47768) MQTT: Received audio packet with wrong sequence: 58, expected: 56
+I (50228) StateMachine: State: speaking -> listening
+W (50248) GifDisplay: === SetEmotion('neutral') ===
+W (50248) GifDisplay: Mapped 'neutral' -> 'listening.gif' (state=5)
+W (50308) GifDisplay: >>> PLAYING: listening.gif (loop, 280x280)
+I (53178) MQTT: Closing audio channel, send_goodbye: 1
+I (53188) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (53188) wifi:Set ps type: 2, coexist: 0
+
+I (53228) MQTT: Received goodbye message, session_id: 56583b8a
+I (53238) StateMachine: State: listening -> idle
+W (53238) GifDisplay: === SetEmotion('neutral') ===
+W (53248) GifDisplay: Mapped 'neutral' -> 'idle.gif' (state=3)
+W (53288) GifDisplay: >>> PLAYING: idle.gif (loop, 280x280)
+I (53288) MQTT: Closing audio channel, send_goodbye: 0
+I (53298) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (53298) wifi:Set ps type: 2, coexist: 0
+
+I (62818) SystemInfo: free sram: 121459 minimal sram: 84019
