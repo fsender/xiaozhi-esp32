@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>小智 AI 助手 · 圆形 AMOLED 1.8″ UI 复刻</title>
+<style>
+/* ========== 设计令牌(改 --screen 即可整体缩放) ========== */
+:root{
+  --screen: 480px;                 /* 复刻屏直径;真机可按分辨率换算 */
+  --bg-top:   #4fa9ef;             /* 渐变顶部 */
+  --bg-bottom:#8fd9f8;             /* 渐变底部 */
+  --clock-fg: #ffffff;
+  --bubble-bg: rgba(255,255,255,.9);
+  --bubble-fg: #1d6db7;            /* 品牌蓝文字 */
+  --font-ui: "PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+}
+
+/* ========== 设备外壳(模拟屏幕外边框) ========== */
+body{
+  margin:0; min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  background:#eef1f5;
+  font-family:var(--font-ui);
+}
+
+/* ========== 圆形 AMOLED 屏 ========== */
+.screen{
+  width:var(--screen); aspect-ratio:1/1;
+  border-radius:50%;
+  position:relative; overflow:hidden;
+  background:linear-gradient(180deg,var(--bg-top),var(--bg-bottom));
+  box-shadow:0 12px 40px rgba(20,80,150,.28);
+}
+
+/* ---- 顶部:时钟 (top-mid) ---- */
+.clock{
+  position:absolute; top:4%; left:0; right:0;
+  text-align:center;
+  color:var(--clock-fg);
+  font-size:calc(var(--screen) * .045);   /* ≈21px @480 */
+  font-weight:700;
+  letter-spacing:.04em;
+  line-height:1;
+  text-shadow:0 1px 2px rgba(0,0,0,.15); /* 微弱投影提升可读性 */
+}
+
+/* ---- 中央:小龙表情 idle.gif (center) ---- */
+.mascot{
+  position:absolute; top:12%;
+  left:50%; transform:translateX(-50%);
+  height:76%;                        /* 占据中上部,脚部被气泡叠压 */
+  display:flex; align-items:center; justify-content:center;
+}
+.mascot img{
+  height:100%; max-width:82%;
+  object-fit:contain;
+}
+
+/* ---- 底部:对话气泡 (bottom-mid,压在角色之上) ---- */
+.bubble{
+  position:absolute;
+  bottom:8%;
+  left:50%; transform:translateX(-50%);
+  width:54%;                          /* ≤该 y 处圆的弦宽(≈0.543D),防切边 */
+  padding:calc(var(--screen)*.016) calc(var(--screen)*.03);
+  background:var(--bubble-bg);
+  border-radius:999px;               /* 胶囊形:圆角 ≥ 高度一半 */
+  box-sizing:border-box;
+  z-index:2;                         /* 叠在小龙脚下 */
+}
+.bubble p{
+  margin:0;
+  color:var(--bubble-fg);
+  font-size:calc(var(--screen)*.025);  /* ≈12px @480 */
+  line-height:1.65;
+  text-align:left;
+}
+</style>
+</head>
+<body>
+
+<main class="screen" aria-label="小智助手圆形屏">
+  <!-- 顶部状态栏 -->
+  <div class="clock">20:20</div>
+
+  <!-- 中央表情:idle 循环动画(GIF 路径为真机资源;浏览器打不开时 fallback 显示占位) -->
+  <div class="mascot">
+    <img
+      src="/home/me/espidf/prj/xiaozhi-esp32/main/assets/emojis/amoled-1.8/idle.gif"
+      alt="小智小龙 idle 动画"
+      onerror="this.onerror=null;this.src=&quot;data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'&gt;&lt;text x='100' y='150' font-size='130' text-anchor='middle'&gt;🐉&lt;/text&gt;&lt;/svg&gt;&quot;;">
+  </div>
+
+  <!-- 底部对话气泡(<br> 固定换行点,与截图一致) -->
+  <div class="bubble">
+    <p>是非成败转头空，青山依旧在，惯看秋月<br>春风。一壶浊酒喜相逢，古今多少事，滚</p>
+  </div>
+</main>
+
+</body>
+</html>

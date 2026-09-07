@@ -11,6 +11,7 @@
 #include "power_save_timer.h"
 #include "axp2101.h"
 #include "i2c_device.h"
+#include "assets.h"
 
 #include <esp_log.h>
 #include <esp_lcd_panel_vendor.h>
@@ -22,6 +23,10 @@
 #include <esp_lcd_touch_ft5x06.h>
 #include <esp_lvgl_port.h>
 #include <lvgl.h>
+#include <esp_timer.h>
+#include <cmath>
+#include <esp_heap_caps.h>
+#include <jpeg_decoder.h>
 
 #define TAG "WaveshareEsp32s3TouchAMOLED1inch8"
 
@@ -69,7 +74,48 @@ static const sh8601_lcd_init_cmd_t vendor_specific_init[] = {
     {0x29, (uint8_t[]){0x00}, 0, 10}
 };
 
-// 在waveshare_amoled_1_8类之前添加新的显示类
+// Complete emotion -> GIF mapping (ALL emotions, NO emoji fallback)
+static const char* GetGifAssetForEmotion(const char* emotion) {
+    if (!emotion) return "idle.gif";
+    struct EmotionMap { const char* name; const char* gif; };
+    static const EmotionMap kMap[] = {
+        // Core states (server-driven)
+        {"neutral",    "idle.gif"},
+        {"idle",       "idle.gif"},
+        {"listening",  "listening.gif"},
+        {"thinking",   "thinking.gif"},
+        {"speaking",   "speaking.gif"},
+        {"sleepy",     "sleep.gif"},
+        // Emotional expressions
+        {"happy",      "tap.gif"},
+        {"surprised",  "shake1.gif"},
+        {"angry",      "shake2.gif"},
+        {"sad",        "listen_end.gif"},
+        {"crying",     "listen_end.gif"},
+        {"confused",   "idle_to_think.gif"},
+        {"embarrassed","listen_end.gif"},
+        {"funny",      "tap.gif"},
+        {"laughing",   "tap.gif"},
+        {"loving",     "tap.gif"},
+        {"kissy",      "tap.gif"},
+        {"winking",    "tap.gif"},
+        {"cool",       "tap.gif"},
+        {"confident",  "tap.gif"},
+        {"delicious",  "tap.gif"},
+        {"relaxed",    "idle.gif"},
+        {"shocked",    "shake1.gif"},
+        {"silly",      "tap.gif"},
+    };
+    for (const auto& entry : kMap) {
+        if (strcmp(emotion, entry.name) == 0) {
+            return entry.gif;
+        }
+    }
+    // Unknown emotion -> default idle (never return nullptr)
+    ESP_LOGW("GifMap", "Unknown emotion '%s', using idle.gif", emotion);
+    return "idle.gif";
+}
+
 class CustomLcdDisplay : public SpiLcdDisplay {
 public:
     CustomLcdDisplay(esp_lcd_panel_io_handle_t io_handle,
@@ -83,17 +129,159 @@ public:
                     bool swap_xy)
         : SpiLcdDisplay(io_handle, panel_handle,
                     width, height, offset_x, offset_y, mirror_x, mirror_y, swap_xy) {
-        // Note: UI customization should be done in SetupUI(), not in constructor
-        // to ensure lvgl objects are created before accessing them
     }
 
+    lv_obj_t* bg_img_ = nullptr;
+    uint8_t* bg_pixels_ = nullptr;  // Decoded JPEG pixel buffer (PSRAM)
+
     virtual void SetupUI() override {
-        // Call parent SetupUI() first to create all lvgl objects
         SpiLcdDisplay::SetupUI();
+        DisplayLockGuard lock(this);
+
+        auto screen = lv_screen_active();
+
+        // Make container transparent so background shows through
+        if (container_) {
+            lv_obj_set_style_bg_opa(container_, LV_OPA_TRANSP, 0);
+        }
+
+        // Load and decode bg_large.jpg using ESP ROM JPEG decoder
+        void* bg_ptr = nullptr;
+        size_t bg_size = 0;
+        if (Assets::GetInstance().GetAssetData("bg_large.jpg", bg_ptr, bg_size)) {
+            ESP_LOGW("CustomDisplay", "bg_large.jpg found, size=%u bytes, decoding...", (unsigned)bg_size);
+
+            // Allocate output buffer for RGB565 decoded image (368x448x2)
+            bg_pixels_ = (uint8_t*)heap_caps_malloc(368 * 448 * 2, MALLOC_CAP_SPIRAM);
+            if (bg_pixels_) {
+                esp_jpeg_image_cfg_t cfg = {};
+                cfg.indata = static_cast<uint8_t*>(bg_ptr);
+                cfg.indata_size = bg_size;
+                cfg.outbuf = bg_pixels_;
+                cfg.outbuf_size = 368 * 448 * 2;
+                cfg.out_format = JPEG_IMAGE_FORMAT_RGB565;
+                cfg.out_scale = JPEG_IMAGE_SCALE_0;
+                cfg.flags.swap_color_bytes = 0;
+
+                esp_jpeg_image_output_t img_info = {};
+                esp_err_t ret = esp_jpeg_decode(&cfg, &img_info);
+                if (ret == ESP_OK) {
+                    ESP_LOGW("CustomDisplay", "JPEG decoded: %dx%d, %u bytes", img_info.width, img_info.height, (unsigned)img_info.output_len);
+
+                    static lv_img_dsc_t bg_dsc = {};
+                    bg_dsc.header.magic = LV_IMAGE_HEADER_MAGIC;
+                    bg_dsc.header.cf = LV_COLOR_FORMAT_RGB565;
+                    bg_dsc.header.w = img_info.width;
+                    bg_dsc.header.h = img_info.height;
+                    bg_dsc.header.stride = img_info.width * 2;
+                    bg_dsc.data = bg_pixels_;
+                    bg_dsc.data_size = img_info.output_len;
+
+                    bg_img_ = lv_image_create(screen);
+                    lv_image_set_src(bg_img_, &bg_dsc);
+                    lv_obj_set_size(bg_img_, LV_HOR_RES, LV_VER_RES);
+                    lv_obj_align(bg_img_, LV_ALIGN_CENTER, 0, 0);
+                    lv_obj_move_to_index(bg_img_, 0);
+                    ESP_LOGW("CustomDisplay", "Background image displayed successfully!");
+                } else {
+                    ESP_LOGE("CustomDisplay", "JPEG decode failed: %d", ret);
+                    lv_obj_set_style_bg_color(screen, lv_color_hex(0x1A3A5C), 0);
+                    heap_caps_free(bg_pixels_);
+                    bg_pixels_ = nullptr;
+                }
+            } else {
+                ESP_LOGE("CustomDisplay", "Failed to allocate PSRAM for bg image");
+                lv_obj_set_style_bg_color(screen, lv_color_hex(0x1A3A5C), 0);
+            }
+        } else {
+            ESP_LOGE("CustomDisplay", "bg_large.jpg NOT found in assets partition!");
+            lv_obj_set_style_bg_color(screen, lv_color_hex(0x1A3A5C), 0);
+        }
+
+        ApplyWhiteTheme();
+    }
+
+    virtual void SetTheme(Theme* theme) override {
+        SpiLcdDisplay::SetTheme(theme);
+        // Reapply customizations after parent SetTheme overwrites them
+        if (container_) {
+            lv_obj_set_style_bg_opa(container_, LV_OPA_TRANSP, 0);
+        }
+        if (bg_img_) {
+            lv_obj_move_to_index(bg_img_, 0);  // Ensure bg stays at back
+        }
+        ApplyWhiteTheme();
+    }
+
+    void ApplyWhiteTheme() {
+        if (!setup_ui_called_) return;
+        DisplayLockGuard lock(this);
+
+        lv_color_t white = lv_color_hex(0xFFFFFF);
+        lv_color_t dark_blue = lv_color_hex(0x1A3A5C);
+
+        // All text elements: white
+        if (status_label_) lv_obj_set_style_text_color(status_label_, white, 0);
+        if (notification_label_) lv_obj_set_style_text_color(notification_label_, white, 0);
+        if (network_label_) lv_obj_set_style_text_color(network_label_, white, 0);
+        if (mute_label_) lv_obj_set_style_text_color(mute_label_, white, 0);
+        if (battery_label_) lv_obj_set_style_text_color(battery_label_, white, 0);
+        if (emoji_label_) lv_obj_set_style_text_color(emoji_label_, white, 0);
+
+        // Content area: white semi-transparent + dark blue text
+        if (content_) {
+            lv_obj_set_style_bg_color(content_, lv_color_hex(0xFFFFFF), 0);
+            lv_obj_set_style_bg_opa(content_, LV_OPA_80, 0);
+            lv_obj_set_style_radius(content_, 16, 0);
+            lv_obj_set_style_border_width(content_, 0, 0);
+            lv_obj_set_style_text_color(content_, dark_blue, 0);
+        }
+        if (chat_message_label_) {
+            lv_obj_set_style_text_color(chat_message_label_, dark_blue, 0);
+        }
+    }
+
+    virtual void SetEmotion(const char* emotion) override {
+        if (!emotion) emotion = "neutral";
+        if (!emoji_image_) {
+            ESP_LOGW("GifDisplay", "SetEmotion('%s') called but emoji_image_ is null", emotion);
+            return;
+        }
+
+        const char* gif_name = GetGifAssetForEmotion(emotion);
+        ESP_LOGW("GifDisplay", "SetEmotion('%s') -> GIF '%s'", emotion, gif_name);
+
+        void* ptr = nullptr;
+        size_t size = 0;
+        if (!Assets::GetInstance().GetAssetData(gif_name, ptr, size)) {
+            ESP_LOGE("GifDisplay", "GIF asset NOT found in partition: %s", gif_name);
+            return;
+        }
 
         DisplayLockGuard lock(this);
-        lv_obj_set_style_pad_left(status_bar_, LV_HOR_RES * 0.1, 0);
-        lv_obj_set_style_pad_right(status_bar_, LV_HOR_RES * 0.1, 0);
+        if (gif_controller_) {
+            gif_controller_->Stop();
+            gif_controller_.reset();
+        }
+
+        lv_img_dsc_t tmp_dsc = {};
+        tmp_dsc.data = static_cast<const uint8_t*>(ptr);
+        gif_controller_ = std::make_unique<LvglGif>(&tmp_dsc);
+
+        if (gif_controller_ && gif_controller_->IsLoaded()) {
+            gif_controller_->SetFrameCallback(
+                [this]() { lv_image_set_src(emoji_image_, gif_controller_->image_dsc()); });
+            lv_image_set_src(emoji_image_, gif_controller_->image_dsc());
+            gif_controller_->Start();
+
+            if (emoji_label_) lv_obj_add_flag(emoji_label_, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_remove_flag(emoji_image_, LV_OBJ_FLAG_HIDDEN);
+            ESP_LOGW("GifDisplay", ">>> PLAYING: %s (emotion: %s, %dx%d)", gif_name, emotion,
+                     gif_controller_->width(), gif_controller_->height());
+        } else {
+            ESP_LOGE("GifDisplay", "Failed to decode GIF: %s", gif_name);
+            gif_controller_.reset();
+        }
     }
 };
 
@@ -136,6 +324,12 @@ private:
     bool dimmed_ = false;
     bool dim_timer_running_ = false;
     static constexpr int kDimSeconds = 60;
+
+    // QMI8658 IMU - disabled to avoid I2C bus conflicts
+    // Qmi8658* imu_ = nullptr;
+
+    // Touch gesture state - handled by LVGL
+    // esp_lcd_touch_handle_t touch_handle_ = nullptr;
 
     void InitializePowerSaveTimer() {
         power_save_timer_ = new PowerSaveTimer(-1, 60, 300);
@@ -363,6 +557,16 @@ private:
         ESP_LOGI(TAG, "Touch panel initialized successfully");
     }
 
+    void InitializeQmi8658() {
+        // Disabled to avoid I2C bus conflicts with touch controller
+        ESP_LOGI(TAG, "QMI8658 IMU disabled (I2C bus conflict avoidance)");
+    }
+
+    void InitializeGestureHandlers() {
+        // Touch gestures are handled by LVGL's built-in event system.
+        ESP_LOGI(TAG, "Gesture handlers: using LVGL event system");
+    }
+
     // 初始化工具
     void InitializeTools() {
         auto &mcp_server = McpServer::GetInstance();
@@ -383,11 +587,13 @@ public:
         InitializeCodecI2c();
         InitializeTca9554();
         InitializeAxp2101();
+        // InitializeQmi8658();  // Disabled to avoid I2C bus conflicts
         InitializeSpi();
         InitializeSH8601Display();
         InitializeTouch();
         InitializeButtons();
         InitializeTools();
+        InitializeGestureHandlers();
     }
 
     virtual AudioCodec* GetAudioCodec() override {
