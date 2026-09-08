@@ -1222,13 +1222,17 @@ private:
         }
         shake_pending_ = true;
 
-        // Schedule shake GIF play on main thread (SetEmotion handles LVGL ops)
+        // Schedule on main thread: reset sleep state, restore brightness,
+        // then play the shake GIF (without waking into listening).
         app.Schedule([this]() {
             shake_pending_ = false;
             auto& app = Application::GetInstance();
             if (app.GetDeviceState() != kDeviceStateIdle) {
                 return;
             }
+            // Reset sleep countdown and exit sleep mode if sleeping (restores brightness)
+            power_save_timer_->WakeUp();
+            // Play shake GIF
             auto* display = dynamic_cast<CustomLcdDisplay*>(Board::GetInstance().GetDisplay());
             if (display) {
                 display->pending_wake_source_ = CustomLcdDisplay::WakeSource::SHAKE_IMU;

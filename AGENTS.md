@@ -92,3 +92,27 @@ The build script changes local `sdkconfig` and build state. Do not assume the bu
 - CI matrix: `.github/workflows/build.yml`
 
 Keep detailed or fast-changing information in those files, not here. Add a nested `AGENTS.md` only when a subsystem needs specialized instructions.
+
+
+# PROJECT STATUS
+
+Build for hardware `waveshare_ESP32_S3_TOUCH_AMOLED_1_8` was tested and worked well.
+Now target hardware is selected as `Waveshare esp32-s3-touch-lcd-1.85b` . It has Built but UNTESTED on the real hardware.
+
+To modify. please refer to `main/boards/waveshare/esp32-s3-touch-amoled-1.8/` and see source code in it.
+
+## Burn command
+
+### 为1.8寸AMOLED开发板编译
+
+```sh
+cd build_waveshare_ESP32_S3_TOUCH_AMOLED_1_8
+esptool.py -p /dev/ttyACM0 -b 921600 --before default-reset --after hard-reset --chip esp32s3 write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB 0x0 bootloader/bootloader.bin 0x8000 partition_table/partition-table.bin 0xd000 ota_data_initial.bin 0x400000 generated_assets.bin 0x20000 xiaozhi.bin 
+```
+
+### 为1.85B寸LCD开发板编译
+
+```sh
+cd build
+esptool.py -p /dev/ttyACM0 -b 921600 --before default-reset --after hard-reset --chip esp32s3 write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB 0x0 bootloader/bootloader.bin 0x8000 partition_table/partition-table.bin 0xd000 ota_data_initial.bin 0x400000 generated_assets.bin 0x20000 xiaozhi.bin 
+```
