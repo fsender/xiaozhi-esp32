@@ -113,6 +113,6 @@ esptool.py -p /dev/ttyACM0 -b 921600 --before default-reset --after hard-reset -
 ### 为1.85B寸LCD开发板编译
 
 ```sh
-cd build
+cd build_waveshare_ESP32_S3_TOUCH_LCD_1_85_B
 esptool.py -p /dev/ttyACM0 -b 921600 --before default-reset --after hard-reset --chip esp32s3 write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB 0x0 bootloader/bootloader.bin 0x8000 partition_table/partition-table.bin 0xd000 ota_data_initial.bin 0x400000 generated_assets.bin 0x20000 xiaozhi.bin 
 ```
