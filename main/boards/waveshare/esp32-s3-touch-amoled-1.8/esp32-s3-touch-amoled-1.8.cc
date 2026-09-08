@@ -616,14 +616,11 @@ public:
         pending_wake_source_ = WakeSource::NONE;
 
         if (wake_src == WakeSource::SHAKE_IMU && prev_state == "idle") {
-            // IMU shake: play random shake GIF, then transition to listening
+            // IMU shake: play random shake GIF only (no wake)
             const char* shake_gif = (esp_random() & 1) ? "shake1.gif" : "shake2.gif";
-            // Always end with listening.gif loop, not the connecting-state target
-            const char* trans_gif = GetTransitionGif("idle", "listening");
             EnqueueGifChain({
                 {shake_gif, false},
-                {trans_gif, false},
-                {"listening.gif", true},
+                {"idle.gif", true},
             }, true);
             return;
         }
@@ -1018,20 +1015,18 @@ private:
         }
         shake_pending_ = true;
 
-        // Set wake source so SetEmotion knows to play shake GIF
-        auto* display = dynamic_cast<CustomLcdDisplay*>(Board::GetInstance().GetDisplay());
-        if (display) {
-            display->pending_wake_source_ = CustomLcdDisplay::WakeSource::SHAKE_IMU;
-        }
-
-        // Schedule StartListening on main thread (safe, no LVGL calls)
+        // Schedule shake GIF play on main thread (SetEmotion handles LVGL ops)
         app.Schedule([this]() {
             shake_pending_ = false;
             auto& app = Application::GetInstance();
             if (app.GetDeviceState() != kDeviceStateIdle) {
                 return;
             }
-            app.StartListening();
+            auto* display = dynamic_cast<CustomLcdDisplay*>(Board::GetInstance().GetDisplay());
+            if (display) {
+                display->pending_wake_source_ = CustomLcdDisplay::WakeSource::SHAKE_IMU;
+                display->SetEmotion("neutral");
+            }
         });
     }
 
