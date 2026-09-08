@@ -612,6 +612,7 @@ void Application::InitializeProtocol() {
             }
             if (strcmp(state->valuestring, "start") == 0) {
                 Schedule([this]() {
+                    ESP_LOGI(TAG, ">>> Server: start -> SetDeviceState(SPEAKING)");
                     aborted_ = false;
                     SetDeviceState(kDeviceStateSpeaking);
                 });
@@ -619,8 +620,10 @@ void Application::InitializeProtocol() {
                 Schedule([this]() {
                     if (GetDeviceState() == kDeviceStateSpeaking) {
                         if (listening_mode_ == kListeningModeManualStop) {
+                            ESP_LOGI(TAG, ">>> Server: stop (manual) -> SetDeviceState(IDLE)");
                             SetDeviceState(kDeviceStateIdle);
                         } else {
+                            ESP_LOGI(TAG, ">>> Server: stop (auto) -> SetDeviceState(LISTENING)");
                             SetDeviceState(kDeviceStateListening);
                         }
                     }
@@ -773,10 +776,12 @@ void Application::HandleToggleChatEvent() {
         SetDeviceState(kDeviceStateIdle);
         return;
     } else if (state == kDeviceStateWifiConfiguring) {
+        ESP_LOGI(TAG, ">>> HandleToggleChat: wifi configuring -> audio testing");
         audio_service_.EnableAudioTesting(true);
         SetDeviceState(kDeviceStateAudioTesting);
         return;
     } else if (state == kDeviceStateAudioTesting) {
+        ESP_LOGI(TAG, ">>> HandleToggleChat: audio testing -> wifi configuring");
         audio_service_.EnableAudioTesting(false);
         SetDeviceState(kDeviceStateWifiConfiguring);
         return;
@@ -789,6 +794,7 @@ void Application::HandleToggleChatEvent() {
 
     if (state == kDeviceStateIdle) {
         ListeningMode mode = GetDefaultListeningMode();
+        ESP_LOGI(TAG, ">>> HandleToggleChat: idle, mode=%d, channel_opened=%d", (int)mode, protocol_->IsAudioChannelOpened());
         if (!protocol_->IsAudioChannelOpened()) {
             SetDeviceState(kDeviceStateConnecting);
             // Schedule to let the state change be processed first (UI update)
@@ -797,8 +803,10 @@ void Application::HandleToggleChatEvent() {
         }
         SetListeningMode(mode);
     } else if (state == kDeviceStateSpeaking) {
+        ESP_LOGI(TAG, ">>> HandleToggleChat: speaking -> aborting");
         AbortSpeaking(kAbortReasonNone);
     } else if (state == kDeviceStateListening) {
+        ESP_LOGI(TAG, ">>> HandleToggleChat: listening -> closing audio channel");
         protocol_->CloseAudioChannel();
     }
 }
@@ -806,15 +814,18 @@ void Application::HandleToggleChatEvent() {
 void Application::ContinueOpenAudioChannel(ListeningMode mode) {
     // Check state again in case it was changed during scheduling
     if (GetDeviceState() != kDeviceStateConnecting) {
+        ESP_LOGW(TAG, ">>> ContinueOpenAudioChannel: SKIP (state=%d)", (int)GetDeviceState());
         return;
     }
 
+    ESP_LOGI(TAG, ">>> ContinueOpenAudioChannel: mode=%d, channel_opened=%d", (int)mode, protocol_->IsAudioChannelOpened());
     // Switch to performance mode before connecting to reduce latency
     auto& board = Board::GetInstance();
     board.SetPowerSaveLevel(PowerSaveLevel::PERFORMANCE);
 
     if (!protocol_->IsAudioChannelOpened()) {
         if (!protocol_->OpenAudioChannel()) {
+            ESP_LOGE(TAG, ">>> ContinueOpenAudioChannel: FAILED to open channel");
             // Return to idle so the device is not stuck in the connecting
             // state (not every failure path reports a network error)
             SetDeviceState(kDeviceStateIdle);
@@ -837,6 +848,7 @@ void Application::HandleStartListeningEvent() {
         SetDeviceState(kDeviceStateIdle);
         return;
     } else if (state == kDeviceStateWifiConfiguring) {
+        ESP_LOGI(TAG, ">>> HandleStartListening: wifi configuring -> audio testing");
         audio_service_.EnableAudioTesting(true);
         SetDeviceState(kDeviceStateAudioTesting);
         return;
@@ -848,25 +860,30 @@ void Application::HandleStartListeningEvent() {
     }
 
     if (state == kDeviceStateIdle) {
+        ListeningMode mode = GetDefaultListeningMode();
+        ESP_LOGI(TAG, ">>> HandleStartListening: idle, mode=%d, channel_opened=%d", (int)mode, protocol_->IsAudioChannelOpened());
         if (!protocol_->IsAudioChannelOpened()) {
             SetDeviceState(kDeviceStateConnecting);
             // Schedule to let the state change be processed first (UI update)
-            Schedule([this]() { ContinueOpenAudioChannel(kListeningModeManualStop); });
+            Schedule([this, mode]() { ContinueOpenAudioChannel(mode); });
             return;
         }
-        SetListeningMode(kListeningModeManualStop);
+        SetListeningMode(mode);
     } else if (state == kDeviceStateSpeaking) {
+        ESP_LOGI(TAG, ">>> HandleStartListening: speaking -> aborting, auto stop");
         AbortSpeaking(kAbortReasonNone);
-        SetListeningMode(kListeningModeManualStop);
+        SetListeningMode(GetDefaultListeningMode());
     }
 }
 
 void Application::HandleStopListeningEvent() {
     auto state = GetDeviceState();
+    ESP_LOGI(TAG, ">>> HandleStopListening: state=%d", (int)state);
 
     if (state == kDeviceStateNotifying) {
         StopNotification();
     } else if (state == kDeviceStateAudioTesting) {
+        ESP_LOGI(TAG, ">>> HandleStopListening: audio testing -> wifi configuring");
         audio_service_.EnableAudioTesting(false);
         SetDeviceState(kDeviceStateWifiConfiguring);
         return;
@@ -874,6 +891,7 @@ void Application::HandleStopListeningEvent() {
         if (protocol_) {
             protocol_->SendStopListening();
         }
+        ESP_LOGI(TAG, ">>> HandleStopListening: listening -> idle");
         SetDeviceState(kDeviceStateIdle);
     }
 }
@@ -893,6 +911,7 @@ void Application::HandleWakeWordDetectedEvent() {
         StopNotification();
         BeginWakeWordInvoke(wake_word);
     } else if (state == kDeviceStateSpeaking || state == kDeviceStateListening) {
+        ESP_LOGI(TAG, ">>> WakeWord during %s, aborting and restarting", state == kDeviceStateListening ? "LISTENING" : "SPEAKING");
         AbortSpeaking(kAbortReasonWakeWordDetected);
         // Clear send queue to avoid sending residues to server
         while (audio_service_.PopPacketFromSendQueue())
@@ -917,12 +936,14 @@ void Application::HandleWakeWordDetectedEvent() {
 
 void Application::BeginWakeWordInvoke(const std::string& wake_word) {
     // Must run in the main task with the device in idle state
+    ESP_LOGI(TAG, ">>> BeginWakeWordInvoke: wake_word='%s', channel_opened=%d", wake_word.c_str(), protocol_->IsAudioChannelOpened());
     audio_service_.EncodeWakeWord();
 
     // Always pass through the connecting state, even if the audio channel is
     // already opened. ContinueWakeWordInvoke() rejects any other state, so
     // skipping this transition would silently drop the wake word invocation.
     if (!SetDeviceState(kDeviceStateConnecting)) {
+        ESP_LOGW(TAG, ">>> BeginWakeWordInvoke: SetDeviceState(CONNECTING) failed");
         // Wake word detection was stopped by the detection itself; restore it
         // so the device does not become unresponsive to wake words.
         audio_service_.EnableWakeWordDetection(true);
@@ -942,15 +963,18 @@ void Application::BeginWakeWordInvoke(const std::string& wake_word) {
 void Application::ContinueWakeWordInvoke(const std::string& wake_word) {
     // Check state again in case it was changed during scheduling
     if (GetDeviceState() != kDeviceStateConnecting) {
+        ESP_LOGW(TAG, ">>> ContinueWakeWordInvoke: SKIP (state=%d)", (int)GetDeviceState());
         return;
     }
 
+    ESP_LOGI(TAG, ">>> ContinueWakeWordInvoke: wake_word='%s', channel_opened=%d", wake_word.c_str(), protocol_->IsAudioChannelOpened());
     // Switch to performance mode before connecting to reduce latency
     auto& board = Board::GetInstance();
     board.SetPowerSaveLevel(PowerSaveLevel::PERFORMANCE);
 
     if (!protocol_->IsAudioChannelOpened()) {
         if (!protocol_->OpenAudioChannel()) {
+            ESP_LOGE(TAG, ">>> ContinueWakeWordInvoke: FAILED to open channel");
             // Return to idle so the device is not stuck in the connecting
             // state (not every failure path reports a network error), and
             // wake word detection is re-enabled by the idle state handler.
@@ -991,6 +1015,7 @@ void Application::HandleStateChangedEvent() {
     switch (new_state) {
         case kDeviceStateUnknown:
         case kDeviceStateIdle:
+            ESP_LOGI(TAG, ">>> STATE -> IDLE, disabling voice processing");
             display->SetStatus(Lang::Strings::STANDBY);
             display->ClearChatMessages();    // Clear messages first
             display->SetEmotion("neutral");  // Then set emotion (wechat mode checks child count)
@@ -1006,6 +1031,8 @@ void Application::HandleStateChangedEvent() {
             display->SetStatus(Lang::Strings::LISTENING);
             display->SetEmotion("neutral");
 
+            ESP_LOGI(TAG, ">>> STATE -> LISTENING, play_popup=%d, audio_running=%d, mode=%d",
+                     play_popup_on_listening_, audio_service_.IsAudioProcessorRunning(), (int)listening_mode_);
             // Make sure the audio processor is running
             if (play_popup_on_listening_ || !audio_service_.IsAudioProcessorRunning()) {
                 // For auto mode, wait for the playback queue to drain before enabling
@@ -1023,6 +1050,7 @@ void Application::HandleStateChangedEvent() {
             break;
         case kDeviceStateSpeaking:
             display->SetStatus(Lang::Strings::SPEAKING);
+            ESP_LOGI(TAG, ">>> STATE -> SPEAKING, mode=%d", (int)listening_mode_);
 
             if (listening_mode_ != kListeningModeRealtime) {
                 audio_service_.EnableVoiceProcessing(false);
@@ -1033,10 +1061,12 @@ void Application::HandleStateChangedEvent() {
             break;
         case kDeviceStateNotifying:
             display->SetStatus(Lang::Strings::SPEAKING);
+            ESP_LOGI(TAG, ">>> STATE -> NOTIFYING, disabling voice processing");
             audio_service_.EnableVoiceProcessing(false);
             audio_service_.EnableWakeWordDetection(audio_service_.IsAfeWakeWord());
             break;
         case kDeviceStateWifiConfiguring:
+            ESP_LOGI(TAG, ">>> STATE -> WIFI_CONFIGURING, disabling voice processing");
             audio_service_.EnableVoiceProcessing(false);
             audio_service_.EnableWakeWordDetection(false);
             break;
@@ -1050,9 +1080,11 @@ void Application::StartListeningAudio() {
     // Runs in the main loop, either directly from HandleStateChangedEvent or
     // deferred via MAIN_EVENT_PLAYBACK_DRAINED once the playback queue drains.
     if (GetDeviceState() != kDeviceStateListening) {
+        ESP_LOGW(TAG, ">>> StartListeningAudio: SKIP (state=%d)", (int)GetDeviceState());
         return;
     }
 
+    ESP_LOGI(TAG, ">>> StartListeningAudio: calling EnableVoiceProcessing(true), mode=%d", (int)listening_mode_);
     // Send the start listening command
     protocol_->SendStartListening(listening_mode_);
     audio_service_.EnableVoiceProcessing(true);
@@ -1082,6 +1114,7 @@ void Application::StartNotification(std::string audio_url, std::vector<NotifySub
         return;
     }
 
+    ESP_LOGI(TAG, ">>> StartNotification: disabling voice processing");
     auto& board = Board::GetInstance();
     board.SetPowerSaveLevel(PowerSaveLevel::PERFORMANCE);
     audio_service_.EnableVoiceProcessing(false);
@@ -1159,6 +1192,7 @@ void Application::AbortSpeaking(AbortReason reason) {
 }
 
 void Application::SetListeningMode(ListeningMode mode) {
+    ESP_LOGI(TAG, ">>> SetListeningMode(%d) -> SetDeviceState(LISTENING)", (int)mode);
     listening_mode_ = mode;
     SetDeviceState(kDeviceStateListening);
 }

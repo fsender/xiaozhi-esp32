@@ -1,0 +1,102 @@
+W (149048) Gesture: >>> TAP (idle) -> tap.gif -> listen_start -> listening
+W (149048) GifDisplay: WakeWithTrigger('tap') -> tap.gif
+W (149058) GifDisplay: Enqueued 3 steps, priority=HIGH, gif_busy_=true
+W (149058) GifDisplay: Queue next: tap.gif (once)
+W (149108) GifDisplay: >>> PLAYING: tap.gif (once, 280x280)
+I (149108) Application: >>> HandleToggleChat: idle, mode=0, channel_opened=0
+I (149108) StateMachine: State: idle -> connecting
+I (149148) Application: >>> ContinueOpenAudioChannel: mode=0, channel_opened=0
+I (149148) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (149148) wifi:Set ps type: 0, coexist: 0
+
+I (149228) MQTT: Session ID: 363011a9
+I (149228) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (149228) wifi:Set ps type: 0, coexist: 0
+
+I (149238) Application: >>> SetListeningMode(0) -> SetDeviceState(LISTENING)
+I (149238) StateMachine: State: connecting -> listening
+I (149298) Application: >>> STATE -> LISTENING, play_popup=0, audio_running=0, mode=0
+I (149298) Application: >>> StartListeningAudio: calling EnableVoiceProcessing(true), mode=0
+I (149308) AudioService: >>> EnableVoiceProcessing(true)
+W (151928) GifDisplay: Queue next: listen_start.gif (once)
+W (151978) GifDisplay: >>> PLAYING: listen_start.gif (once, 280x280)
+W (154088) GifDisplay: Queue next: listening.gif (loop)
+W (154088) GifDisplay: Final loop step, gif_busy_=false
+W (154138) GifDisplay: >>> PLAYING: listening.gif (loop, 280x280)
+
+------ (等待说话, 此时说话可以响应) ------
+
+I (154708) Application: >> 最近有值得关注的新闻吗？
+I (154718) Application: >>> Server: start -> SetDeviceState(SPEAKING)
+I (154718) StateMachine: State: listening -> speaking
+I (154748) Application: >>> STATE -> SPEAKING, mode=0
+I (154748) AudioService: >>> EnableVoiceProcessing(false)
+I (155448) Application: << % search_news...
+W (155818) GifDisplay: Enqueued 2 steps, priority=normal, gif_busy_=true
+W (155818) GifDisplay: Queue next: listen_to_speak.gif (once)
+W (155878) GifDisplay: >>> PLAYING: listen_to_speak.gif (once, 280x280)
+W (157508) GifDisplay: Queue next: speaking.gif (loop)
+W (157508) GifDisplay: Final loop step, gif_busy_=false
+W (157588) GifDisplay: >>> PLAYING: speaking.gif (loop, 280x280)
+W (158818) MQTT: Received audio packet with wrong sequence: 44, expected: 43
+W (160448) MQTT: Received audio packet with wrong sequence: 71, expected: 70
+W (161938) MQTT: Received audio packet with wrong sequence: 96, expected: 95
+I (163078) Application: << 最近有好多新闻呢！我给你讲几个有趣的吧～
+
+商务部新增了84个全国重点外资项目，总投资额194.6亿美元，包括阿斯利康全球战略研发中心、沙特水电公司绿电直连项目等，好多大公司都在中国加大投资哦！
+
+还有呢，中国微短剧正在美国落地啦！那种每集一两分钟、节奏超快的短剧，现在在美国特别火，好莱坞的福克斯公司都入场了，预计2026年收入能达到15亿美元呢！
+
+人工智能方面也有新进展，首部完全由AI创作的长剧《后西游记》已经登陆卫视了，画面特别精美，不过故事讲述还有进步空间～
+
+你对哪个新闻比较感兴趣呀？
+I (163918) SystemInfo: free sram: 113739 minimal sram: 80019
+I (173928) SystemInfo: free sram: 113227 minimal sram: 80019
+I (183888) SystemInfo: free sram: 112931 minimal sram: 80019
+I (193838) SystemInfo: free sram: 112963 minimal sram: 80019
+I (203518) Application: >>> Server: stop (auto) -> SetDeviceState(LISTENING)
+I (203518) StateMachine: State: speaking -> listening
+W (203518) GifDisplay: Enqueued 2 steps, priority=normal, gif_busy_=true
+W (203528) GifDisplay: Queue next: listen_start.gif (once)
+W (203578) GifDisplay: >>> PLAYING: listen_start.gif (once, 280x280)
+I (203578) Application: >>> STATE -> LISTENING, play_popup=0, audio_running=0, mode=0
+I (203738) Application: >>> StartListeningAudio: calling EnableVoiceProcessing(true), mode=0
+I (203748) AudioService: >>> EnableVoiceProcessing(true)
+W (206348) GifDisplay: Queue next: listening.gif (loop)
+W (206348) GifDisplay: Final loop step, gif_busy_=false
+W (206408) GifDisplay: >>> PLAYING: listening.gif (loop, 280x280)
+W (209268) Gesture: Swipe ignored: state=5 (not idle)
+I (212048) Application: >>> HandleToggleChat: listening -> closing audio channel
+I (212048) MQTT: Closing audio channel, send_goodbye: 1
+I (212048) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (212048) wifi:Set ps type: 2, coexist: 0
+
+I (212058) StateMachine: State: listening -> idle
+I (212058) Application: >>> STATE -> IDLE, disabling voice processing
+W (212068) GifDisplay: Enqueued 2 steps, priority=normal, gif_busy_=true
+W (212068) GifDisplay: Queue next: listen_end.gif (once)
+I (212098) MQTT: Received goodbye message, session_id: 363011a9
+W (212128) GifDisplay: >>> PLAYING: listen_end.gif (once, 280x280)
+I (212128) AudioService: >>> EnableVoiceProcessing(false)
+I (212128) MQTT: Closing audio channel, send_goodbye: 0
+I (212128) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (212138) wifi:Set ps type: 2, coexist: 0
+
+W (213918) GifDisplay: Queue next: idle.gif (loop)
+W (213918) GifDisplay: Final loop step, gif_busy_=false
+W (213978) GifDisplay: >>> PLAYING: idle.gif (loop, 280x280)
+I (221848) SystemInfo: free sram: 117859 minimal sram: 80019
+I (231858) SystemInfo: free sram: 117859 minimal sram: 80019
+I (241848) SystemInfo: free sram: 117875 minimal sram: 80019
+I (251888) SystemInfo: free sram: 117875 minimal sram: 80019
+I (261878) SystemInfo: free sram: 117875 minimal sram: 80019
+I (271858) SystemInfo: free sram: 117875 minimal sram: 80019
+I (272018) WaveshareEsp32s3TouchAMOLED1inch8: Dim mode (always-on)
+W (272038) GifDisplay: Enqueued 1 steps, priority=normal, gif_busy_=true
+W (272038) GifDisplay: Queue next: idle.gif (loop)
+W (272038) GifDisplay: Final loop step, gif_busy_=false
+W (272098) GifDisplay: >>> PLAYING: idle.gif (loop, 280x280)
+I (272098) Backlight: Set brightness to 20
+I (281858) SystemInfo: free sram: 117875 minimal sram: 80019
+I (291898) SystemInfo: free sram: 117875 minimal sram: 80019
+I (301878) SystemInfo: free sram: 117875 minimal sram: 80019

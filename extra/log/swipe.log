@@ -1,0 +1,28 @@
+I (311888) SystemInfo: free sram: 117875 minimal sram: 80019
+I (315578) Application: >>> HandleStartListening: idle, channel_opened=0
+I (315578) StateMachine: State: idle -> connecting
+W (315608) GifDisplay: Enqueued 3 steps, priority=HIGH, gif_busy_=true
+W (315608) GifDisplay: Queue next: shake2.gif (once)
+W (315638) GifDisplay: >>> PLAYING: shake2.gif (once, 280x280)
+I (315688) Application: >>> ContinueOpenAudioChannel: mode=1, channel_opened=0
+I (315688) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (315698) wifi:Set ps type: 0, coexist: 0
+
+I (315778) MQTT: Session ID: 44c9defc
+I (315798) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (315798) wifi:Set ps type: 0, coexist: 0
+
+I (315798) Application: >>> SetListeningMode(1) -> SetDeviceState(LISTENING)
+I (315808) StateMachine: State: connecting -> listening
+I (315838) Application: >>> STATE -> LISTENING, play_popup=0, audio_running=0, mode=1
+I (315838) Application: >>> StartListeningAudio: calling EnableVoiceProcessing(true), mode=1
+I (315848) AudioService: >>> EnableVoiceProcessing(true)
+I (316078) Backlight: Set brightness to 75
+W (321878) GifDisplay: Queue next: listen_start.gif (once)
+W (321928) GifDisplay: >>> PLAYING: listen_start.gif (once, 280x280)
+W (324018) GifDisplay: Queue next: listening.gif (loop)
+W (324018) GifDisplay: Final loop step, gif_busy_=false
+W (324078) GifDisplay: >>> PLAYING: listening.gif (loop, 280x280)
+I (324828) SystemInfo: free sram: 114791 minimal sram: 80019
+
+------ (没有等待说话, 但是状态显示聆听中, 此时说话无法响应) ------

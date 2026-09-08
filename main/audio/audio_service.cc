@@ -685,7 +685,7 @@ void AudioService::ReleaseWakeWordResources() {
 }
 
 void AudioService::EnableVoiceProcessing(bool enable) {
-    ESP_LOGD(TAG, "%s voice processing", enable ? "Enabling" : "Disabling");
+    ESP_LOGI(TAG, ">>> EnableVoiceProcessing(%s)", enable ? "true" : "false");
 
     if (enable) {
         if (!InitializeAudioEngine()) {

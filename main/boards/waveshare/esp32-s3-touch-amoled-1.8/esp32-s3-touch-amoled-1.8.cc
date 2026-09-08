@@ -160,6 +160,8 @@ public:
     lv_timer_t* gif_watchdog_timer_ = nullptr;
     std::string current_state_ = "idle";
     bool gesture_active_ = false;  // Prevent tap during gesture
+    enum class WakeSource { NONE, SHAKE_IMU };
+    volatile WakeSource pending_wake_source_ = WakeSource::NONE;
 
     virtual void SetupUI() override {
         SpiLcdDisplay::SetupUI();
@@ -311,15 +313,8 @@ public:
             }
             app.ToggleChatState();
         } else if (state == kDeviceStateListening || state == kDeviceStateSpeaking) {
-            // Listening/Speaking: tap to interrupt
+            // Listening/Speaking: tap to interrupt (SetEmotion handles the GIF transition)
             ESP_LOGW("Gesture", ">>> TAP (listening/speaking) -> interrupt -> idle");
-            if (display && display->gif_busy_) {
-                // Currently playing a chain (shake/listen_start) - replace queue with idle
-                ESP_LOGW("Gesture", "Chain active, replacing queue with idle.gif");
-                display->gif_queue_.clear();
-                display->gif_queue_.push_back({"idle.gif", true});
-                display->current_state_ = "idle";
-            }
             app.ToggleChatState();
         } else {
             ESP_LOGW("Gesture", "TAP ignored: state=%d", state);
@@ -433,6 +428,30 @@ public:
         current_state_ = "listening";
     }
 
+    // Interrupt the current animation chain and transition to idle.
+    // gif_queue_[0] is always the currently-playing GIF; keep it so the
+    // watchdog advances correctly, and rebuild the tail based on what is
+    // playing now.
+    void InterruptToIdle() {
+        if (!gif_busy_) {
+            // Currently looping (listening/speaking) - normal SetEmotion
+            // transition (listening -> idle) handles listen_end -> idle.
+            return;
+        }
+        std::string current = gif_queue_.empty() ? "" : gif_queue_.front().name;
+        gif_queue_.clear();
+        if (!current.empty()) {
+            gif_queue_.push_back({current, false});
+            if (current == "listen_start.gif") {
+                // Wait for listen_start to finish, then a full listen_end.
+                gif_queue_.push_back({"listen_end.gif", false});
+            }
+        }
+        gif_queue_.push_back({"idle.gif", true});
+        current_state_ = "idle";
+        ESP_LOGW("GifDisplay", "InterruptToIdle: current=%s", current.c_str());
+    }
+
     // --- End GIF Queue System ---
 
     virtual void SetTheme(Theme* theme) override {
@@ -526,7 +545,7 @@ public:
     const char* GetStateTargetGif() {
         auto state = Application::GetInstance().GetDeviceState();
         switch (state) {
-            case kDeviceStateConnecting:  return "listen_start.gif";
+            case kDeviceStateConnecting:  return "listening.gif";
             case kDeviceStateListening:   return "listening.gif";
             case kDeviceStateSpeaking:    return "speaking.gif";
             default:                      return "idle.gif";
@@ -538,10 +557,13 @@ public:
         if (!from_state || !to_state) return nullptr;
         std::string from(from_state), to(to_state);
 
-        if (from == "listening" && to == "speaking") return "listen_to_speak.gif";
-        if (from == "speaking" && to == "listening") return "listen_start.gif";
-        if (from == "listening" && to == "thinking") return "listen_to_think.gif";
-        if (from == "listening" && to == "idle")      return "listen_end.gif";
+        if (from == "idle" && to == "listening")       return "listen_start.gif";
+        if (from == "listening" && to == "speaking")   return "listen_to_speak.gif";
+        if (from == "speaking" && to == "listening")   return "listen_start.gif";
+        if (from == "listening" && to == "thinking")   return "listen_to_think.gif";
+        if (from == "listening" && to == "idle")        return "listen_end.gif";
+        if (from == "speaking" && to == "idle")         return "speak_end.gif";
+        if (from == "thinking" && to == "idle")         return "listen_end.gif";
         return nullptr;
     }
 
@@ -561,29 +583,58 @@ public:
         else if (strstr(target_gif, "thinking")) target_state = "thinking";
         else target_state = "idle";
 
-        ESP_LOGW("GifDisplay", "SetEmotion('%s') state: %s -> %s, gif: %s, busy=%d",
-                 emotion, prev_state.c_str(), target_state.c_str(), target_gif, gif_busy_);
-
         // Always update state tracking
         current_state_ = target_state;
 
-        // Skip GIF changes if high-priority chain is active
-        if (gif_busy_) {
-            ESP_LOGW("GifDisplay", "gif_busy_, will apply when chain finishes");
+        // All GIF/LVGL work below must hold the LVGL lock (SetEmotion runs on
+        // the main task, not the LVGL task).
+        DisplayLockGuard lock(this);
+
+        // Interrupt: transitioning to speaking while listen_start.gif is still
+        // playing (fast server reply after wake) -> go straight to speaking.gif.
+        if (target_state == "speaking" && gif_busy_ && !gif_queue_.empty() &&
+            gif_queue_.front().name == "listen_start.gif") {
+            ESP_LOGW("GifDisplay", "Speaking while listen_start playing -> interrupt to speaking.gif");
+            EnqueueGifChain({{"speaking.gif", true}}, true);
             return;
         }
 
-        // Check for state transition (only during conversation)
+        // Interrupt: transitioning to idle while a wake chain is still playing.
+        // Rebuild the queue to finish at idle instead of continuing to listen.
+        if (target_state == "idle" && prev_state != "idle" && gif_busy_) {
+            InterruptToIdle();
+            return;
+        }
+
+        // Skip GIF changes if a high-priority chain is still active
+        if (gif_busy_) {
+            return;
+        }
+
+        // Check if IMU shake triggered this wake
+        WakeSource wake_src = pending_wake_source_;
+        pending_wake_source_ = WakeSource::NONE;
+
+        if (wake_src == WakeSource::SHAKE_IMU && prev_state == "idle") {
+            // IMU shake: play random shake GIF, then transition to listening
+            const char* shake_gif = (esp_random() & 1) ? "shake1.gif" : "shake2.gif";
+            // Always end with listening.gif loop, not the connecting-state target
+            const char* trans_gif = GetTransitionGif("idle", "listening");
+            EnqueueGifChain({
+                {shake_gif, false},
+                {trans_gif, false},
+                {"listening.gif", true},
+            }, true);
+            return;
+        }
+
+        // Normal state transition
         const char* trans_gif = nullptr;
         if (prev_state != target_state) {
             trans_gif = GetTransitionGif(prev_state.c_str(), target_state.c_str());
         }
 
-        DisplayLockGuard lock(this);
-
         if (trans_gif) {
-            ESP_LOGW("GifDisplay", "State transition: %s -> %s -> %s",
-                     prev_state.c_str(), trans_gif, target_gif);
             EnqueueGifChain({
                 {trans_gif, false},
                 {target_gif, true},
@@ -967,6 +1018,13 @@ private:
         }
         shake_pending_ = true;
 
+        // Set wake source so SetEmotion knows to play shake GIF
+        auto* display = dynamic_cast<CustomLcdDisplay*>(Board::GetInstance().GetDisplay());
+        if (display) {
+            display->pending_wake_source_ = CustomLcdDisplay::WakeSource::SHAKE_IMU;
+        }
+
+        // Schedule StartListening on main thread (safe, no LVGL calls)
         app.Schedule([this]() {
             shake_pending_ = false;
             auto& app = Application::GetInstance();

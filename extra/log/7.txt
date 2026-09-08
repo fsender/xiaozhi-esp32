@@ -1,0 +1,554 @@
+me@Asus-TUF-gaming-PC:~/espidf/prj/xiaozhi-esp32$ 
+--- esp-idf-monitor 1.9.0 on /dev/ttyACM0 115200
+--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x15 (USB_UART_CHIP_RESET),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4038280a
+--- 0x4038280a: esp_cpu_wait_for_intr at /home/me/.espressif/v6.0.2/esp-idf/components/esp_hw_support/cpu.c:64
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x544
+load:0x403c8700,len:0xcc8
+load:0x403cb700,len:0x2eb4
+entry 0x403c88f4
+I (34) octal_psram: vendor id    : 0x0d (AP)
+I (34) octal_psram: dev id       : 0x02 (generation 3)
+I (34) octal_psram: density      : 0x03 (64 Mbit)
+I (36) octal_psram: good-die     : 0x01 (Pass)
+I (40) octal_psram: Latency      : 0x01 (Fixed)
+I (44) octal_psram: VCC          : 0x01 (3V)
+I (48) octal_psram: SRF          : 0x01 (Fast Refresh)
+I (53) octal_psram: BurstType    : 0x01 (Hybrid Wrap)
+I (58) octal_psram: BurstLen     : 0x01 (32 Byte)
+I (62) octal_psram: Readlatency  : 0x02 (10 cycles@Fixed)
+I (68) octal_psram: DriveStrength: 0x00 (1/1)
+I (72) MSPI Timing: Enter psram timing tuning
+I (76) esp_psram: Found 8MB PSRAM device
+I (79) esp_psram: Speed: 80MHz
+I (82) cpu_start: Multicore app
+I (96) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (97) cpu_start: Pro cpu start user code
+I (97) cpu_start: cpu freq: 240000000 Hz
+I (98) app_init: Application information:
+I (102) app_init: Project name:     xiaozhi
+I (106) app_init: App version:      2.4.2
+I (110) app_init: Compile time:     Sep  8 2026 08:21:33
+I (115) app_init: ELF file SHA256:  cfb02b36b...
+I (119) app_init: ESP-IDF:          v6.0.2
+I (123) efuse_init: Min chip rev:     v0.0
+I (127) efuse_init: Max chip rev:     v0.99 
+I (131) efuse_init: Chip rev:         v0.2
+I (135) heap_init: Initializing. RAM available for dynamic allocation:
+I (141) heap_init: At 3FCA9F00 len 0003F810 (254 KiB): RAM
+I (146) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (151) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (156) heap_init: At 600FE000 len 00001FD8 (7 KiB): RTCRAM
+I (162) esp_psram: Adding pool of 8192K of PSRAM memory to heap allocator
+I (169) spi_flash: detected chip: winbond
+I (172) spi_flash: flash io: qio
+I (176) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (181) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (188) main_task: Started on CPU0
+I (188) esp_psram: Reserving pool of 96K of internal memory for DMA/internal allocations
+I (198) main_task: Calling app_main()
+I (208) Board: UUID=96aa8ea5-2ad0-44b3-b72d-cfc580140f3c SKU=esp32-s3-touch-amoled-1.8
+I (208) button: IoT Button Version: 4.2.1
+I (218) PowerSaveTimer: Power save timer enabled
+I (618) WaveshareEsp32s3TouchAMOLED1inch8: Init AXP2101
+I (618) WaveshareEsp32s3TouchAMOLED1inch8: Initializing QMI8658 IMU on shared I2C bus
+I (618) QMI8658: QMI8658 detected (WHO_AM_I=0x05)
+I (718) QMI8658: Initialized: accel ±8g/250Hz, gyro ±512dps/250Hz
+I (718) WaveshareEsp32s3TouchAMOLED1inch8: QMI8658 IMU initialized at address 0x6B
+I (718) WaveshareEsp32s3TouchAMOLED1inch8: IMU motion detection task started
+W (718) spi_common: GPIO 0 is conflict with others and be overwritten
+W (728) spi_common: GPIO 0 is conflict with others and be overwritten
+W (738) spi_common: GPIO 0 is conflict with others and be overwritten
+I (738) sh8601: LCD panel create success, version: 1.0.2
+I (978) Display: Power management not supported
+I (1048) LcdDisplay: Turning display on
+I (1048) LcdDisplay: Initialize LVGL library
+I (1048) LcdDisplay: Use 2MB of PSRAM for image cache
+I (1048) LcdDisplay: Initialize LVGL port
+I (1058) LcdDisplay: Adding LCD display
+I (1058) LVGL: Starting LVGL task
+E (1058) sh8601: swap_xy is not supported by this panel
+I (1068) Backlight: Set brightness to 75
+I (1068) WaveshareEsp32s3TouchAMOLED1inch8: Initialize touch controller
+I (1108) WaveshareEsp32s3TouchAMOLED1inch8: Touch panel initialized successfully
+I (1108) MCP: Add tool: self.system.reconfigure_wifi
+W (1108) WaveshareEsp32s3TouchAMOLED1inch8: Gesture handlers deferred to display SetupUI
+I (1118) StateMachine: State: unknown -> starting
+I (1128) Assets: The storage free size is 21696 KB
+I (1128) Assets: The partition size is 12288 KB
+I (1628) Assets: The checksum calculation time is 500 ms
+W (1628) CustomDisplay: bg_large.jpg found, size=4452 bytes, decoding...
+W (1738) CustomDisplay: JPEG decoded: 368x448, 329728 bytes
+W (1738) CustomDisplay: Background image displayed successfully!
+W (1738) CustomDisplay: Tap handler on emoji_image_
+W (1748) CustomDisplay: All gesture handlers registered
+I (1808) Es8311AudioCodec: Duplex channels created
+I (1808) Es8311AudioCodec: ES8311 software reset complete
+I (1818) ES8311: Work in Slave mode
+I (1818) Es8311AudioCodec: Es8311AudioCodec initialized
+I (1818) AudioCodec: Audio codec started
+I (1818) MCP: Add tool: self.get_device_status
+I (1828) MCP: Add tool: self.audio_speaker.set_volume
+I (1828) MCP: Add tool: self.screen.set_brightness
+I (1838) MCP: Add tool: self.screen.set_theme
+I (1838) MCP: Add tool: self.get_system_info [user]
+I (1838) MCP: Add tool: self.reboot [user]
+I (1848) MCP: Add tool: self.upgrade_firmware [user]
+I (1848) MCP: Add tool: self.screen.get_info [user]
+I (1858) MCP: Add tool: self.screen.snapshot [user]
+I (1858) MCP: Add tool: self.screen.preview_image [user]
+I (1868) MCP: Add tool: self.assets.set_download_url [user]
+I (1868) WifiManager: Initializing...
+I (1878) pp: pp rom version: e7ae62f
+I (1878) net80211: net80211 rom version: e7ae62f
+I (1888) wifi:wifi driver task: 3fce0ffc, prio:23, stack:6656, core=0
+I (1888) wifi:wifi firmware version: 00ad238
+I (1888) wifi:wifi certification version: v7.0
+I (1898) wifi:config NVS flash: disabled
+I (1898) wifi:config nano formatting: disabled
+I (1898) wifi:Init data frame dynamic rx buffer num: 6
+I (1908) wifi:Init dynamic rx mgmt buffer num: 5
+I (1908) wifi:Init management short buffer num: 32
+I (1918) wifi:Init dynamic tx buffer num: 32
+I (1918) wifi:Init static tx FG buffer num: 2
+I (1928) wifi:Init static rx buffer size: 1600
+I (1928) wifi:Init static rx buffer num: 3
+I (1928) wifi:Init dynamic rx buffer num: 6
+I (1938) wifi_init: rx ba win: 3
+I (1938) wifi_init: accept mbox: 6
+I (1938) wifi_init: tcpip mbox: 16
+I (1948) wifi_init: udp mbox: 6
+I (1948) wifi_init: tcp mbox: 6
+I (1948) wifi_init: tcp tx win: 5760
+I (1958) wifi_init: tcp rx win: 5760
+I (1958) wifi_init: tcp mss: 1440
+I (1958) WifiManager: Initialized
+I (1968) WifiBoard: Starting WiFi connection attempt
+I (1968) WifiManager: Starting station
+I (1968) WifiStation: Station DHCP hostname: Xiaozhi-3D64
+I (1978) phy_init: phy_version 712,87e8c20e,Apr 13 2026,18:51:10
+I (2018) wifi:mode : sta (fc:01:2c:d9:3d:64)
+I (2018) wifi:enable tsf
+I (2018) WifiBoard: WiFi scanning
+I (2018) PowerSaveTimer: Power save timer disabled
+I (2018) WaveshareEsp32s3TouchAMOLED1inch8: Always-on enabled (charging)
+I (4418) WifiStation: Found AP: Inuyasha2.4G, BSSID: 50:cf:56:f6:eb:da, RSSI: -61, Channel: 6, Authmode: 7
+I (4428) WifiBoard: WiFi connecting to Inuyasha2.4G
+W (4428) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2
+I (6838) wifi:new:<6,1>, old:<1,0>, ap:<255,255>, sta:<6,1>, prof:1, snd_ch_cfg:0x0
+I (6838) wifi:state: init -> auth (0xb0)
+I (7098) wifi:state: auth -> init (0x600)
+I (7098) wifi:new:<6,0>, old:<6,1>, ap:<255,255>, sta:<6,1>, prof:1, snd_ch_cfg:0x0
+I (7098) wifi:new:<6,1>, old:<6,0>, ap:<255,255>, sta:<6,1>, prof:1, snd_ch_cfg:0x0
+I (7108) wifi:state: init -> auth (0xb0)
+I (11348) wifi:state: auth -> init (0x200)
+I (11348) wifi:new:<6,0>, old:<6,1>, ap:<255,255>, sta:<6,1>, prof:1, snd_ch_cfg:0x0
+I (11358) wifi:new:<6,1>, old:<6,0>, ap:<255,255>, sta:<6,1>, prof:1, snd_ch_cfg:0x0
+I (11358) wifi:state: init -> auth (0xb0)
+I (11858) wifi:state: auth -> assoc (0x0)
+I (11858) SystemInfo: free sram: 158879 minimal sram: 154463
+I (11928) wifi:state: assoc -> run (0x10)
+I (12078) wifi:connected with Inuyasha2.4G, aid = 23, channel 6, 40U, bssid = 50:cf:56:f6:eb:da
+I (12088) wifi:security: WPA3-SAE H2E, phy: bgn, rssi: -61, cipher(pairwise:0x3, group:0x3), pmf:1
+I (12088) wifi:pm start, type: 1
+
+I (12088) wifi:dp: 1, bi: 102400, li: 10, scale listen interval from 1024000 us to 1024000 us
+I (12098) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000
+I (12128) wifi:<ba-add>idx:0 (ifx:0, 50:cf:56:f6:eb:da), tid:6, ssn:2, winSize:64
+I (12128) wifi:<ba-add>idx:1 (ifx:0, 50:cf:56:f6:eb:da), tid:0, ssn:0, winSize:64
+I (12188) wifi:AP's beacon interval = 102400 us, DTIM period = 1
+I (13118) esp_netif_handlers: sta ip: 192.168.1.210, mask: 255.255.255.0, gw: 192.168.1.1
+I (13118) WifiStation: Got IP: 192.168.1.210
+I (13118) WifiBoard: Connected to WiFi: Inuyasha2.4G
+I (13118) Application: Network connected
+I (13118) StateMachine: State: starting -> activating
+I (13128) MODEL_LOADER: Successfully load srmodels
+I (13138) Assets: Refreshing display theme...
+W (13148) GifDisplay: Enqueued 1 steps, priority=normal, gif_busy_=true
+W (13148) GifDisplay: Queue next: idle.gif (loop)
+W (13148) GifDisplay: Final loop step, gif_busy_=false
+W (13188) GifDisplay: >>> PLAYING: idle.gif (loop, 280x280)
+I (13268) Ota: Current version: 2.4.2
+I (13958) HttpClient: Established new connection to api.tenclass.net:443 protocol=https cost=690
+I (14038) HttpClient: HTTP connection closed
+I (14038) Ota: Current is the latest version
+I (14038) Ota: Running partition: ota_0
+I (14038) MQTT: Connecting to endpoint api.tenclass.net
+I (14828) MQTT: Connected to endpoint
+I (14828) Application: Activation done
+I (14828) SystemInfo: free sram: 134639 minimal sram: 125215
+I (14838) StateMachine: State: activating -> idle
+I (14838) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (14848) wifi:Set ps type: 2, coexist: 0
+
+I (14848) Application: >>> STATE -> IDLE, disabling voice processing
+W (14858) GifDisplay: Enqueued 1 steps, priority=normal, gif_busy_=true
+W (14858) GifDisplay: Queue next: idle.gif (loop)
+W (14868) GifDisplay: Final loop step, gif_busy_=false
+W (14918) GifDisplay: >>> PLAYING: idle.gif (loop, 280x280)
+I (14918) AudioService: >>> EnableVoiceProcessing(false)
+I (14918) AfeAudioEngine: Model 0: fst
+I (14918) AfeAudioEngine: Model 1: mn7_cn
+I (14928) CustomWakeWord: Command: ni hao xing fu long, Text: 你好兴福龙, Action: wake
+Build fst from commands.
+Quantized MultiNet7:rnnt_ctc_2.0, name:mn7_cn, (May 25 2026 15:51:00)
+Quantized MultiNet7 search method: 2, time out:3.0 s
+set det threshold to 0.200000
+Build fst from commands.
+1 active speech commands:
+Command 1: ni hao xing fu long
+I (16478) WakeWordCache: Allocated 64000 bytes in PSRAM
+I (16478) AFE: AFE Version: (1MIC_V251128)
+I (16478) AFE: Input PCM Config: total 1 channels(1 microphone, 0 playback), sample rate:16000
+I (16488) AFE: AFE Pipeline: [input] -> |VAD(WebRTC)| -> [output]
+I (16498) AFE: AFE Version: (1MIC_V251128)
+I (16498) AFE: Input PCM Config: total 1 channels(1 microphone, 0 playback), sample rate:16000
+I (16508) AFE: AFE Pipeline: [input] -> |VAD(WebRTC)| -> [output]
+I (16508) AfeAudioEngine: Initialized FD AFE, detector: MultiNet, NS: off, feed: 512, fetch: 512
+I (16528) AudioCodec: Set output enable to true
+I (16528) I2S_IF: STD mode, dir: TX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1
+I (16538) I2S_IF: STD mode, dir: RX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1
+I (16558) Adev_Codec: Open codec device OK
+I (16558) AudioCodec: Set input enable to true
+I (16558) AudioService: Resampling audio from 16000 to 24000
+I (24828) SystemInfo: free sram: 117963 minimal sram: 81811
+I (29298) CustomWakeWord: Custom wake word detected: command_id=1, string= ni hao xing fu long, prob=0.220394
+I (29298) Application: Wake word detected: 你好兴福龙 (state: 3)
+I (29308) Application: >>> BeginWakeWordInvoke: wake_word='你好兴福龙', channel_opened=0
+I (29308) StateMachine: State: idle -> connecting
+W (29378) GifDisplay: Enqueued 1 steps, priority=HIGH, gif_busy_=true
+W (29378) GifDisplay: Queue next: speaking.gif (loop)
+W (29378) GifDisplay: Final loop step, gif_busy_=false
+W (29428) GifDisplay: >>> PLAYING: speaking.gif (loop, 280x280)
+I (29428) Application: >>> ContinueWakeWordInvoke: wake_word='你好兴福龙', channel_opened=0
+I (29438) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (29438) wifi:Set ps type: 0, coexist: 0
+
+I (29528) MQTT: Session ID: 42865b74
+I (29528) WifiStation: Setting WiFi power save level: PERFORMANCE (NONE)
+I (29528) wifi:Set ps type: 0, coexist: 0
+
+I (29528) Application: Wake word detected: 你好兴福龙
+I (29608) CustomWakeWord: Encode wake word opus 33 packets in 297 ms
+I (29618) Application: >>> SetListeningMode(0) -> SetDeviceState(LISTENING)
+I (29618) StateMachine: State: connecting -> listening
+I (29648) Application: >>> STATE -> LISTENING, play_popup=0, audio_running=0, mode=0
+I (29648) Application: >>> StartListeningAudio: calling EnableVoiceProcessing(true), mode=0
+I (29648) AudioService: >>> EnableVoiceProcessing(true)
+I (29748) Application: >> 你好兴福龙
+I (29758) Application: >>> Server: start -> SetDeviceState(SPEAKING)
+I (29758) StateMachine: State: listening -> speaking
+I (29758) Application: >>> STATE -> SPEAKING, mode=0
+I (29758) AudioService: >>> EnableVoiceProcessing(false)
+W (30268) GifDisplay: Enqueued 2 steps, priority=normal, gif_busy_=true
+W (30268) GifDisplay: Queue next: listen_to_speak.gif (once)
+W (30318) GifDisplay: >>> PLAYING: listen_to_speak.gif (once, 280x280)
+I (31218) Application: << 你好呀！我是兴福龙，很高兴见到你！今天有什么好玩的想跟我分享吗？
+W (31748) GifDisplay: Queue next: speaking.gif (loop)
+W (31748) GifDisplay: Final loop step, gif_busy_=false
+W (31808) GifDisplay: >>> PLAYING: speaking.gif (loop, 280x280)
+I (36558) Application: >>> Server: stop (auto) -> SetDeviceState(LISTENING)
+I (36558) StateMachine: State: speaking -> listening
+W (36638) GifDisplay: Enqueued 2 steps, priority=normal, gif_busy_=true
+W (36638) GifDisplay: Queue next: listen_start.gif (once)
+W (36688) GifDisplay: >>> PLAYING: listen_start.gif (once, 280x280)
+I (36688) Application: >>> STATE -> LISTENING, play_popup=0, audio_running=0, mode=0
+I (36688) Application: >>> StartListeningAudio: calling EnableVoiceProcessing(true), mode=0
+I (36698) AudioService: >>> EnableVoiceProcessing(true)
+W (38828) GifDisplay: Queue next: listening.gif (loop)
+W (38828) GifDisplay: Final loop step, gif_busy_=false
+W (38878) GifDisplay: >>> PLAYING: listening.gif (loop, 280x280)
+I (41608) Application: >> 讲一则冷笑话。
+I (41688) Application: >>> Server: start -> SetDeviceState(SPEAKING)
+I (41688) StateMachine: State: listening -> speaking
+I (41688) Application: >>> STATE -> SPEAKING, mode=0
+I (41688) AudioService: >>> EnableVoiceProcessing(false)
+I (41888) Application: << % get_random_jokes...
+W (42108) GifDisplay: Enqueued 2 steps, priority=normal, gif_busy_=true
+W (42108) GifDisplay: Queue next: listen_to_speak.gif (once)
+W (42148) GifDisplay: >>> PLAYING: listen_to_speak.gif (once, 280x280)
+W (43468) GifDisplay: Queue next: speaking.gif (loop)
+W (43468) GifDisplay: Final loop step, gif_busy_=false
+W (43518) GifDisplay: >>> PLAYING: speaking.gif (loop, 280x280)
+I (44088) Application: << 哈哈，给你讲一个！病人说："医生，我总觉得自己是台空调。"医生说："别紧张，先对着我吹会儿热风。" 嘻嘻，好冷呀！
+W (46658) MQTT: Received audio packet with wrong sequence: 175, expected: 174
+W (49598) MQTT: Received audio packet with wrong sequence: 224, expected: 223
+W (50398) MQTT: Received audio packet with wrong sequence: 237, expected: 236
+W (50498) MQTT: Received audio packet with wrong sequence: 239, expected: 238
+I (50918) SystemInfo: free sram: 112915 minimal sram: 73643
+I (52548) Application: >>> Server: stop (auto) -> SetDeviceState(LISTENING)
+I (52548) StateMachine: State: speaking -> listening
+W (52598) GifDisplay: Enqueued 2 steps, priority=normal, gif_busy_=true
+W (52598) GifDisplay: Queue next: listen_start.gif (once)
+W (52648) GifDisplay: >>> PLAYING: listen_start.gif (once, 280x280)
+I (52648) Application: >>> STATE -> LISTENING, play_popup=0, audio_running=0, mode=0
+I (52648) Application: >>> StartListeningAudio: calling EnableVoiceProcessing(true), mode=0
+I (52658) AudioService: >>> EnableVoiceProcessing(true)
+W (52738) Gesture: >>> TAP (listening/speaking) -> interrupt -> idle
+W (52738) Gesture: listen_start playing, will play listen_end then idle
+I (52738) Application: >>> HandleToggleChat: listening -> closing audio channel
+I (52748) MQTT: Closing audio channel, send_goodbye: 1
+I (52758) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (52758) wifi:Set ps type: 2, coexist: 0
+
+I (52788) MQTT: Received goodbye message, session_id: 42865b74
+I (52858) StateMachine: State: listening -> idle
+I (52858) Application: >>> STATE -> IDLE, disabling voice processing
+I (52858) AudioService: >>> EnableVoiceProcessing(false)
+I (52858) MQTT: Closing audio channel, send_goodbye: 0
+I (52868) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (52868) wifi:Set ps type: 2, coexist: 0
+
+W (54868) GifDisplay: Queue next: idle.gif (loop)
+W (54868) GifDisplay: Final loop step, gif_busy_=false
+W (54918) GifDisplay: >>> PLAYING: idle.gif (loop, 280x280)
+I (61878) SystemInfo: free sram: 119635 minimal sram: 73643
+W (62998) Boot: >>> BOOT (idle) -> tap.gif -> listen_start -> listening
+W (62998) GifDisplay: WakeWithTrigger('button') -> tap.gif
+W (63008) GifDisplay: Enqueued 3 steps, priority=HIGH, gif_busy_=true
+Guru Meditation Error: Core  1 panic'ed (IllegalInstruction). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x69672e67  PS      : 0x00060930  A0      : 0x82017f4e  A1      : 0x3fcc9a40  
+A2      : 0x3fcea2b0  A3      : 0x00000000  A4      : 0x00060320  A5      : 0x3fc9b558  
+A6      : 0x00000000  A7      : 0x00048b01  A8      : 0x82017ed1  A9      : 0x3fcc9a20  
+A10     : 0x3fcea2ec  A11     : 0x3c32fb10  A12     : 0x000000c0  A13     : 0x00000000  
+A14     : 0x00000101  A15     : 0x3c44cf0c  SAR     : 0x0000001b  EXCCAUSE: 0x00000000  
+EXCVADDR: 0x00000000  LBEG    : 0x40056f08  LEND    : 0x40056f12  LCOUNT  : 0x00000000  
+--- 0x40056f08: __memcpy_aux in ROM
+--- 0x40056f12: __memcpy_aux in ROM
+
+
+Backtrace: 0x69672e64:0x3fcc9a40 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: cfb02b36b
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x421db154
+--- 0x421db154: uart_ll_get_txfifo_len at /home/me/.espressif/v6.0.2/esp-idf/components/esp_hal_uart/esp32s3/include/hal/uart_ll.h:434
+--- (inlined by) uart_tx_char at /home/me/.espressif/v6.0.2/esp-idf/components/esp_driver_uart/src/uart_vfs.c:190
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x544
+load:0x403c8700,len:0xcc8
+load:0x403cb700,len:0x2eb4
+entry 0x403c88f4
+I (34) octal_psram: vendor id    : 0x0d (AP)
+I (34) octal_psram: dev id       : 0x02 (generation 3)
+I (34) octal_psram: density      : 0x03 (64 Mbit)
+I (36) octal_psram: good-die     : 0x01 (Pass)
+I (40) octal_psram: Latency      : 0x01 (Fixed)
+I (44) octal_psram: VCC          : 0x01 (3V)
+I (48) octal_psram: SRF          : 0x01 (Fast Refresh)
+I (53) octal_psram: BurstType    : 0x01 (Hybrid Wrap)
+I (58) octal_psram: BurstLen     : 0x01 (32 Byte)
+I (62) octal_psram: Readlatency  : 0x02 (10 cycles@Fixed)
+I (67) octal_psram: DriveStrength: 0x00 (1/1)
+I (71) MSPI Timing: Enter psram timing tuning
+I (76) esp_psram: Found 8MB PSRAM device
+I (79) esp_psram: Speed: 80MHz
+I (82) cpu_start: Multicore app
+I (96) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (96) cpu_start: Pro cpu start user code
+I (97) cpu_start: cpu freq: 240000000 Hz
+I (98) app_init: Application information:
+I (102) app_init: Project name:     xiaozhi
+I (106) app_init: App version:      2.4.2
+I (109) app_init: Compile time:     Sep  8 2026 08:21:33
+I (114) app_init: ELF file SHA256:  cfb02b36b...
+I (119) app_init: ESP-IDF:          v6.0.2
+I (123) efuse_init: Min chip rev:     v0.0
+I (126) efuse_init: Max chip rev:     v0.99 
+I (130) efuse_init: Chip rev:         v0.2
+I (134) heap_init: Initializing. RAM available for dynamic allocation:
+I (141) heap_init: At 3FCA9F00 len 0003F810 (254 KiB): RAM
+I (146) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (151) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (156) heap_init: At 600FE000 len 00001FD8 (7 KiB): RTCRAM
+I (161) esp_psram: Adding pool of 8192K of PSRAM memory to heap allocator
+I (168) spi_flash: detected chip: winbond
+I (172) spi_flash: flash io: qio
+I (175) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (181) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (188) main_task: Started on CPU0
+I (188) esp_psram: Reserving pool of 96K of internal memory for DMA/internal allocations
+I (198) main_task: Calling app_main()
+I (208) Board: UUID=96aa8ea5-2ad0-44b3-b72d-cfc580140f3c SKU=esp32-s3-touch-amoled-1.8
+I (208) button: IoT Button Version: 4.2.1
+I (218) PowerSaveTimer: Power save timer enabled
+I (618) WaveshareEsp32s3TouchAMOLED1inch8: Init AXP2101
+I (618) WaveshareEsp32s3TouchAMOLED1inch8: Initializing QMI8658 IMU on shared I2C bus
+I (618) QMI8658: QMI8658 detected (WHO_AM_I=0x05)
+I (718) QMI8658: Initialized: accel ±8g/250Hz, gyro ±512dps/250Hz
+I (718) WaveshareEsp32s3TouchAMOLED1inch8: QMI8658 IMU initialized at address 0x6B
+I (718) WaveshareEsp32s3TouchAMOLED1inch8: IMU motion detection task started
+W (718) spi_common: GPIO 0 is conflict with others and be overwritten
+W (728) spi_common: GPIO 0 is conflict with others and be overwritten
+W (738) spi_common: GPIO 0 is conflict with others and be overwritten
+I (738) sh8601: LCD panel create success, version: 1.0.2
+I (978) Display: Power management not supported
+I (1048) LcdDisplay: Turning display on
+I (1048) LcdDisplay: Initialize LVGL library
+I (1048) LcdDisplay: Use 2MB of PSRAM for image cache
+I (1048) LcdDisplay: Initialize LVGL port
+I (1058) LcdDisplay: Adding LCD display
+I (1058) LVGL: Starting LVGL task
+E (1058) sh8601: swap_xy is not supported by this panel
+I (1068) Backlight: Set brightness to 75
+I (1068) WaveshareEsp32s3TouchAMOLED1inch8: Initialize touch controller
+I (1108) WaveshareEsp32s3TouchAMOLED1inch8: Touch panel initialized successfully
+I (1108) MCP: Add tool: self.system.reconfigure_wifi
+W (1108) WaveshareEsp32s3TouchAMOLED1inch8: Gesture handlers deferred to display SetupUI
+I (1118) StateMachine: State: unknown -> starting
+I (1128) Assets: The storage free size is 21696 KB
+I (1128) Assets: The partition size is 12288 KB
+I (1628) Assets: The checksum calculation time is 500 ms
+W (1628) CustomDisplay: bg_large.jpg found, size=4452 bytes, decoding...
+W (1738) CustomDisplay: JPEG decoded: 368x448, 329728 bytes
+W (1738) CustomDisplay: Background image displayed successfully!
+W (1738) CustomDisplay: Tap handler on emoji_image_
+W (1748) CustomDisplay: All gesture handlers registered
+I (1808) Es8311AudioCodec: Duplex channels created
+I (1808) Es8311AudioCodec: ES8311 software reset complete
+I (1818) ES8311: Work in Slave mode
+I (1818) Es8311AudioCodec: Es8311AudioCodec initialized
+I (1818) AudioCodec: Audio codec started
+I (1818) MCP: Add tool: self.get_device_status
+I (1828) MCP: Add tool: self.audio_speaker.set_volume
+I (1828) MCP: Add tool: self.screen.set_brightness
+I (1838) MCP: Add tool: self.screen.set_theme
+I (1838) MCP: Add tool: self.get_system_info [user]
+I (1838) MCP: Add tool: self.reboot [user]
+I (1848) MCP: Add tool: self.upgrade_firmware [user]
+I (1848) MCP: Add tool: self.screen.get_info [user]
+I (1858) MCP: Add tool: self.screen.snapshot [user]
+I (1858) MCP: Add tool: self.screen.preview_image [user]
+I (1868) MCP: Add tool: self.assets.set_download_url [user]
+I (1868) WifiManager: Initializing...
+I (1878) pp: pp rom version: e7ae62f
+I (1878) net80211: net80211 rom version: e7ae62f
+I (1888) wifi:wifi driver task: 3fce1008, prio:23, stack:6656, core=0
+I (1888) wifi:wifi firmware version: 00ad238
+I (1888) wifi:wifi certification version: v7.0
+I (1898) wifi:config NVS flash: disabled
+I (1898) wifi:config nano formatting: disabled
+I (1898) wifi:Init data frame dynamic rx buffer num: 6
+I (1908) wifi:Init dynamic rx mgmt buffer num: 5
+I (1908) wifi:Init management short buffer num: 32
+I (1918) wifi:Init dynamic tx buffer num: 32
+I (1918) wifi:Init static tx FG buffer num: 2
+I (1928) wifi:Init static rx buffer size: 1600
+I (1928) wifi:Init static rx buffer num: 3
+I (1928) wifi:Init dynamic rx buffer num: 6
+I (1938) wifi_init: rx ba win: 3
+I (1938) wifi_init: accept mbox: 6
+I (1938) wifi_init: tcpip mbox: 16
+I (1948) wifi_init: udp mbox: 6
+I (1948) wifi_init: tcp mbox: 6
+I (1948) wifi_init: tcp tx win: 5760
+I (1958) wifi_init: tcp rx win: 5760
+I (1958) wifi_init: tcp mss: 1440
+I (1958) WifiManager: Initialized
+I (1968) WifiBoard: Starting WiFi connection attempt
+I (1968) WifiManager: Starting station
+I (1968) WifiStation: Station DHCP hostname: Xiaozhi-3D64
+I (1978) phy_init: phy_version 712,87e8c20e,Apr 13 2026,18:51:10
+I (2018) wifi:mode : sta (fc:01:2c:d9:3d:64)
+I (2018) wifi:enable tsf
+I (2018) WifiBoard: WiFi scanning
+I (2018) PowerSaveTimer: Power save timer disabled
+I (2018) WaveshareEsp32s3TouchAMOLED1inch8: Always-on enabled (charging)
+I (4428) WifiStation: Found AP: Inuyasha2.4G, BSSID: 50:cf:56:f6:eb:da, RSSI: -55, Channel: 6, Authmode: 7
+I (4428) WifiBoard: WiFi connecting to Inuyasha2.4G
+W (4428) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2
+I (6848) wifi:new:<6,1>, old:<1,0>, ap:<255,255>, sta:<6,1>, prof:1, snd_ch_cfg:0x0
+I (6848) wifi:state: init -> auth (0xb0)
+I (7108) wifi:state: auth -> init (0x600)
+I (7108) wifi:new:<6,0>, old:<6,1>, ap:<255,255>, sta:<6,1>, prof:1, snd_ch_cfg:0x0
+I (7108) wifi:new:<6,1>, old:<6,0>, ap:<255,255>, sta:<6,1>, prof:1, snd_ch_cfg:0x0
+I (7108) wifi:state: init -> auth (0xb0)
+I (11358) wifi:state: auth -> init (0x200)
+I (11358) wifi:new:<6,0>, old:<6,1>, ap:<255,255>, sta:<6,1>, prof:1, snd_ch_cfg:0x0
+I (11358) wifi:new:<6,1>, old:<6,0>, ap:<255,255>, sta:<6,1>, prof:1, snd_ch_cfg:0x0
+I (11368) wifi:state: init -> auth (0xb0)
+I (11858) wifi:state: auth -> assoc (0x0)
+I (11858) SystemInfo: free sram: 158839 minimal sram: 154403
+I (11918) wifi:state: assoc -> run (0x10)
+I (12068) wifi:connected with Inuyasha2.4G, aid = 23, channel 6, 40U, bssid = 50:cf:56:f6:eb:da
+I (12068) wifi:security: WPA3-SAE H2E, phy: bgn, rssi: -57, cipher(pairwise:0x3, group:0x3), pmf:1
+I (12078) wifi:pm start, type: 1
+
+I (12078) wifi:dp: 1, bi: 102400, li: 10, scale listen interval from 1024000 us to 1024000 us
+I (12088) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000
+I (12098) wifi:AP's beacon interval = 102400 us, DTIM period = 1
+I (12138) wifi:<ba-add>idx:0 (ifx:0, 50:cf:56:f6:eb:da), tid:6, ssn:2, winSize:64
+I (12148) wifi:<ba-add>idx:1 (ifx:0, 50:cf:56:f6:eb:da), tid:0, ssn:0, winSize:64
+I (13128) esp_netif_handlers: sta ip: 192.168.1.210, mask: 255.255.255.0, gw: 192.168.1.1
+I (13128) WifiStation: Got IP: 192.168.1.210
+I (13128) WifiBoard: Connected to WiFi: Inuyasha2.4G
+I (13128) Application: Network connected
+I (13128) StateMachine: State: starting -> activating
+I (13138) MODEL_LOADER: Successfully load srmodels
+I (13148) Assets: Refreshing display theme...
+W (13158) GifDisplay: Enqueued 1 steps, priority=normal, gif_busy_=true
+W (13158) GifDisplay: Queue next: idle.gif (loop)
+W (13158) GifDisplay: Final loop step, gif_busy_=false
+W (13198) GifDisplay: >>> PLAYING: idle.gif (loop, 280x280)
+I (13278) Ota: Current version: 2.4.2
+I (13958) HttpClient: Established new connection to api.tenclass.net:443 protocol=https cost=680
+E (13988) esp-tls-mbedtls: read error :-0x004C
+E (13988) EspSsl: SSL receive failed: -76
+I (13988) HttpClient: HTTP connection closed
+I (13998) Ota: Current is the latest version
+I (13998) Ota: Running partition: ota_0
+I (14008) MQTT: Connecting to endpoint api.tenclass.net
+I (14698) MQTT: Connected to endpoint
+I (14698) Application: Activation done
+I (14698) SystemInfo: free sram: 134787 minimal sram: 128407
+I (14698) StateMachine: State: activating -> idle
+I (14708) WifiStation: Setting WiFi power save level: LOW_POWER (MAX_MODEM)
+I (14708) wifi:Set ps type: 2, coexist: 0
+
+I (14718) Application: >>> STATE -> IDLE, disabling voice processing
+W (14788) GifDisplay: Enqueued 1 steps, priority=normal, gif_busy_=true
+W (14788) GifDisplay: Queue next: idle.gif (loop)
+W (14788) GifDisplay: Final loop step, gif_busy_=false
+W (14838) GifDisplay: >>> PLAYING: idle.gif (loop, 280x280)
+I (14838) AudioService: >>> EnableVoiceProcessing(false)
+I (14838) AfeAudioEngine: Model 0: fst
+I (14838) AfeAudioEngine: Model 1: mn7_cn
+I (14848) CustomWakeWord: Command: ni hao xing fu long, Text: 你好兴福龙, Action: wake
+Build fst from commands.
+Quantized MultiNet7:rnnt_ctc_2.0, name:mn7_cn, (May 25 2026 15:51:00)
+Quantized MultiNet7 search method: 2, time out:3.0 s
+set det threshold to 0.200000
+Build fst from commands.
+1 active speech commands:
+Command 1: ni hao xing fu long
+I (16398) WakeWordCache: Allocated 64000 bytes in PSRAM
+I (16408) AFE: AFE Version: (1MIC_V251128)
+I (16408) AFE: Input PCM Config: total 1 channels(1 microphone, 0 playback), sample rate:16000
+I (16408) AFE: AFE Pipeline: [input] -> |VAD(WebRTC)| -> [output]
+I (16418) AFE: AFE Version: (1MIC_V251128)
+I (16418) AFE: Input PCM Config: total 1 channels(1 microphone, 0 playback), sample rate:16000
+I (16428) AFE: AFE Pipeline: [input] -> |VAD(WebRTC)| -> [output]
+I (16438) AfeAudioEngine: Initialized FD AFE, detector: MultiNet, NS: off, feed: 512, fetch: 512
+I (16448) AudioCodec: Set output enable to true
+I (16448) I2S_IF: STD mode, dir: TX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1
+I (16458) I2S_IF: STD mode, dir: RX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1
+I (16488) Adev_Codec: Open codec device OK
+I (16488) AudioCodec: Set input enable to true
+I (16488) AudioService: Resampling audio from 16000 to 24000
+I (24858) SystemInfo: free sram: 117931 minimal sram: 81811
+I (34888) SystemInfo: free sram: 117351 minimal sram: 81811

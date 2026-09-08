@@ -1,0 +1,33 @@
+
+I (476768) Application: Wake word detected: 你好兴福龙
+I (476808) Application: >>> SetListeningMode(0) -> SetDeviceState(LISTENING)
+I (476808) StateMachine: State: connecting -> listening
+W (476838) GifDisplay: Enqueued 2 steps, priority=normal, gif_busy_=true
+W (476838) GifDisplay: Queue next: listen_start.gif (once)
+I (476878) Application: >> 你好兴福龙
+W (476888) GifDisplay: >>> PLAYING: listen_start.gif (once, 280x280)
+I (476888) Application: >>> STATE -> LISTENING, play_popup=0, audio_running=0, mode=0
+I (476888) Application: >>> StartListeningAudio: calling EnableVoiceProcessing(true), mode=0
+I (476908) AudioService: >>> EnableVoiceProcessing(true)
+I (476938) Application: >>> Server: start -> SetDeviceState(SPEAKING)
+I (476948) StateMachine: State: listening -> speaking
+I (476948) Application: >>> STATE -> SPEAKING, mode=0
+I (476948) AudioService: >>> EnableVoiceProcessing(false)
+I (477708) Application: << 你好呀！我是兴福龙，很高兴见到你！今天想聊点什么呢？
+W (478318) MQTT: Received audio packet with wrong sequence: 11, expected: 10
+W (479478) GifDisplay: Queue next: listening.gif (loop)
+W (479478) GifDisplay: Final loop step, gif_busy_=false
+W (479598) GifDisplay: >>> PLAYING: listening.gif (loop, 280x280)
+I (482388) Application: >>> Server: stop (auto) -> SetDeviceState(LISTENING)
+I (482388) StateMachine: State: speaking -> listening
+W (482428) GifDisplay: Enqueued 2 steps, priority=normal, gif_busy_=true
+W (482428) GifDisplay: Queue next: listen_start.gif (once)
+W (482478) GifDisplay: >>> PLAYING: listen_start.gif (once, 280x280)
+I (482478) Application: >>> STATE -> LISTENING, play_popup=0, audio_running=0, mode=0
+I (482508) Application: >>> StartListeningAudio: calling EnableVoiceProcessing(true), mode=0
+I (482518) AudioService: >>> EnableVoiceProcessing(true)
+W (484708) GifDisplay: Queue next: listening.gif (loop)
+W (484708) GifDisplay: Final loop step, gif_busy_=false
+W (484768) GifDisplay: >>> PLAYING: listening.gif (loop, 280x280)
+
+------ (等待说话, 此时说话可以响应) ------
